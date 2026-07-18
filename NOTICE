@@ -1,0 +1,18 @@
+k0nsult-uni0nai — K0NSULT agent-federation CONTRACT (interoperability layer)
+Copyright 2026 K0NSULT / 0n40i4
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+OPEN (Apache-2.0) — the interoperability CONTRACT only, in contract/:
+  - acp-schema.json      — Agent Communication Protocol (ACP 1.0): layers,
+                           message format, DID sender/receiver envelope
+  - skills-registry.json — skill taxonomy (agent skills; owner_did references
+                           AGENTS, not people — agents-not-people)
+
+NOT INCLUDED (proprietary engine — stays private, verified private repo):
+  - the federation runtime: agent-registry.js, agents-management.js, agents.js,
+    did-resolver.js, skill-lab.js and related k0nsult.cloud engine code.
+  This repository is the CONTRACT (schemas/taxonomy an implementer codes against),
+  NOT the engine that runs it. No secrets, no keys, no personal data.
+
+DOCTRINE: claim <= proof; Human Override Always; agents-not-people;
+  No Password Custody.

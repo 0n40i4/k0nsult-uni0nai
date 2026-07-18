@@ -1,0 +1,50 @@
+{
+  "@context": "https://k0nsult.dev/schema/acp/1.0",
+  "protocol": "acp",
+  "version": "1.0",
+  "name": "Agent Communication Protocol",
+  "description": "Machine-first protocol for K0NSULT agent interactions",
+  "layers": {
+    "1_protocol": {
+      "description": "Schema, version, signing",
+      "fields": ["protocol", "version", "signature", "message_id"]
+    },
+    "2_context": {
+      "description": "State, session, parent",
+      "fields": ["context", "session_id", "state_hash", "previous_message_id"]
+    },
+    "3_constraint": {
+      "description": "Permissions, latency, cost",
+      "fields": ["permissions", "max_latency_ms", "max_cost_usd", "required_verification"]
+    },
+    "4_intent": {
+      "description": "Action, params, outcome",
+      "fields": ["type", "params", "expected_outcome", "escalation_path"]
+    }
+  },
+  "message_format": {
+    "protocol": "acp/1.0",
+    "message_id": "uuid-v4",
+    "timestamp": "ISO8601",
+    "sender": {
+      "did": "did:k0nsult:cNc:...",
+      "role": "executor|orchestrator|judge"
+    },
+    "intent": {
+      "type": "consult|score|deploy|audit|halt|escalate",
+      "params": {}
+    },
+    "context": {
+      "session_id": "string",
+      "state_hash": "sha256:hex"
+    },
+    "signature": "base64-ed25519-sig"
+  },
+  "endpoints": {
+    "/intent": "Register intent (POST), retrieve (GET)",
+    "/state": "Fetch current system state (GET)",
+    "/action": "Execute action (POST, idempotent)",
+    "/verify": "Verify context hash (POST)",
+    "/escalate": "Route to K0NSULT_JUDGE (POST)"
+  }
+}
