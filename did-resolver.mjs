@@ -55,10 +55,27 @@ const ISO8601_RE =
 // variant. Applies to every vocabulary below.
 const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
 
+// PII can hide in a VALUE of an allowed key (public_key.x = "jan@example.com"),
+// not just a key name. Round-2 HIGH: scan values too, at any depth.
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+const PESEL_RE = /(?<![0-9A-Za-z])\d{11}(?![0-9A-Za-z])/;
+const PHONE_RE = /(?:\+\d[\d\s().-]{6,}\d)|(?<![0-9A-Za-z])\d(?:[\s().-]\d){6,}(?![0-9A-Za-z])/;
+function valuePII(v) {
+  if (typeof v !== 'string') return null;
+  if (EMAIL_RE.test(v)) return 'email-shaped';
+  if (PESEL_RE.test(v)) return '11-digit (PESEL/national-id)-shaped';
+  if (PHONE_RE.test(v)) return 'phone-shaped';
+  return null;
+}
+
 const PII_KEYS = new Set(
   [
-    'person', 'email', 'e-mail', 'pesel',
-    'national_id', 'national-id', 'nationalid', 'ssn',
+    'person', 'persons', 'people',
+    'full_name', 'fullname', 'first_name', 'firstname', 'given_name', 'givenname',
+    'last_name', 'lastname', 'surname', 'family_name', 'familyname',
+    'email', 'e-mail', 'mail', 'phone', 'tel', 'telephone', 'mobile',
+    'address', 'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
+    'dob', 'date_of_birth', 'birth_date', 'birthdate',
   ].map(norm)
 );
 const PRIVATE_KEY_KEYS = new Set(
@@ -106,8 +123,11 @@ function firstPrivatePath(node) {
 // First path at which person-PID material appears, or null.
 function firstPiiPath(node) {
   let hit = null;
-  walkKeys(node, (k, _raw, path) => {
-    if (hit === null && PII_KEYS.has(k)) hit = `${path} ("${k}")`;
+  walkKeys(node, (k, _raw, path, value) => {
+    if (hit !== null) return;
+    if (PII_KEYS.has(k)) { hit = `${path} ("${k}")`; return; }
+    const vp = valuePII(value);
+    if (vp) hit = `${path} (value: ${vp})`;
   });
   return hit;
 }

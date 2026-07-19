@@ -32,11 +32,27 @@ const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
 // R2 — person-identifying fields. Their mere presence anywhere fails the doc.
 // Belt to the R6 allowlist's braces: catches classic identity keys even when
 // they hide NESTED under an otherwise-allowed top-level key (e.g. public_key).
+// PII can hide in the VALUE of an ALLOWED key (e.g. public_key.x = "jan@example.com"),
+// not only in a key name. Round-2 HIGH: scan values too, at any depth.
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+const PESEL_RE = /(?<![0-9A-Za-z])\d{11}(?![0-9A-Za-z])/;
+const PHONE_RE = /(?:\+\d[\d\s().-]{6,}\d)|(?<![0-9A-Za-z])\d(?:[\s().-]\d){6,}(?![0-9A-Za-z])/;
+function valuePII(v) {
+  if (typeof v !== 'string') return null;
+  if (EMAIL_RE.test(v)) return 'email-shaped';
+  if (PESEL_RE.test(v)) return '11-digit (PESEL/national-id)-shaped';
+  if (PHONE_RE.test(v)) return 'phone-shaped';
+  return null;
+}
+
 const PII_KEYS = new Set(
   [
-    'person', 'email', 'e-mail', 'pesel',
-    'national_id', 'national-id', 'nationalid',
-    'ssn',
+    'person', 'persons', 'people',
+    'full_name', 'fullname', 'first_name', 'firstname', 'given_name', 'givenname',
+    'last_name', 'lastname', 'surname', 'family_name', 'familyname',
+    'email', 'e-mail', 'mail', 'phone', 'tel', 'telephone', 'mobile',
+    'address', 'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
+    'dob', 'date_of_birth', 'birth_date', 'birthdate',
   ].map(norm)
 );
 
@@ -117,9 +133,13 @@ function validate(doc) {
   // R2 / R4 / R5 — forbidden keys anywhere in the tree (deep).
   //   R2 person PII, R4 transfer-shaped fields (soulbound != crypto),
   //   R5 private key material. Deep so nothing hides under a nested object.
-  walkKeys(doc, (k, _raw, path) => {
+  walkKeys(doc, (k, _raw, path, value) => {
     if (PII_KEYS.has(k)) {
       reasons.push(`R2: person PII field forbidden at ${path} ("${k}")`);
+    }
+    const vp = valuePII(value);
+    if (vp) {
+      reasons.push(`R2: person PII value (${vp}) forbidden at ${path}`);
     }
     if (TRANSFER_KEYS.has(k)) {
       reasons.push(`R4: transfer-shaped field forbidden at ${path} ("${k}")`);
@@ -130,6 +150,9 @@ function validate(doc) {
   });
 
   // R3 — every declared skill must carry evidence_class.
+  if (doc.skills !== undefined && !Array.isArray(doc.skills)) {
+    reasons.push('R3: skills must be an array (object form bypasses per-skill evidence_class)');
+  }
   const skills = Array.isArray(doc.skills) ? doc.skills : [];
   for (let i = 0; i < skills.length; i++) {
     const s = skills[i];

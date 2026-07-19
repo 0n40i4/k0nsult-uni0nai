@@ -5,9 +5,21 @@
     "doc": {
       "id": "did:agent:k0:0001",
       "subject_type": "agent",
-      "public_key": { "kty": "OKP", "crv": "Ed25519", "x": "BASE64URL_PUBLIC" },
-      "skills": [{ "name": "osint-triage", "evidence_class": "A" }],
-      "token": { "kind": "soulbound", "non_transferable": true }
+      "public_key": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "BASE64URL_PUBLIC"
+      },
+      "skills": [
+        {
+          "name": "osint-triage",
+          "evidence_class": "A"
+        }
+      ],
+      "token": {
+        "kind": "soulbound",
+        "non_transferable": true
+      }
     }
   },
   {
@@ -16,7 +28,11 @@
     "doc": {
       "id": "did:agent:k0:0002",
       "subject_type": "agent",
-      "public_key": { "kty": "OKP", "crv": "Ed25519", "x": "PUB" }
+      "public_key": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "PUB"
+      }
     }
   },
   {
@@ -25,12 +41,22 @@
     "doc": {
       "id": "did:agent:k0:0003",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "skills": [
-        { "name": "parser-burp", "evidence_class": "B" },
-        { "name": "judge-panel", "evidence_class": "C" }
+        {
+          "name": "parser-burp",
+          "evidence_class": "B"
+        },
+        {
+          "name": "judge-panel",
+          "evidence_class": "C"
+        }
       ],
-      "token": { "non_transferable": true }
+      "token": {
+        "non_transferable": true
+      }
     }
   },
   {
@@ -39,13 +65,20 @@
     "doc": {
       "id": "did:agent:k0:1001",
       "subject_type": "person",
-      "public_key": { "x": "PUB" }
+      "public_key": {
+        "x": "PUB"
+      }
     }
   },
   {
     "name": "fail-subject-type-missing",
     "expect": "FAIL",
-    "doc": { "id": "did:agent:k0:1002", "public_key": { "x": "PUB" } }
+    "doc": {
+      "id": "did:agent:k0:1002",
+      "public_key": {
+        "x": "PUB"
+      }
+    }
   },
   {
     "name": "fail-pii-email",
@@ -53,7 +86,9 @@
     "doc": {
       "id": "did:agent:k0:1003",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "email": "someone@example.com"
     }
   },
@@ -63,8 +98,12 @@
     "doc": {
       "id": "did:agent:k0:1004",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "controller": { "pesel": "00000000000" }
+      "public_key": {
+        "x": "PUB"
+      },
+      "controller": {
+        "pesel": "00000000000"
+      }
     }
   },
   {
@@ -73,7 +112,9 @@
     "doc": {
       "id": "did:agent:k0:1005",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "national_id": "XYZ"
     }
   },
@@ -83,8 +124,12 @@
     "doc": {
       "id": "did:agent:k0:1006",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "person": { "name": "redacted" }
+      "public_key": {
+        "x": "PUB"
+      },
+      "person": {
+        "name": "redacted"
+      }
     }
   },
   {
@@ -93,8 +138,14 @@
     "doc": {
       "id": "did:agent:k0:1007",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "skills": [{ "name": "osint-triage" }]
+      "public_key": {
+        "x": "PUB"
+      },
+      "skills": [
+        {
+          "name": "osint-triage"
+        }
+      ]
     }
   },
   {
@@ -103,8 +154,15 @@
     "doc": {
       "id": "did:agent:k0:1008",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "skills": [{ "name": "osint-triage", "evidence_class": "" }]
+      "public_key": {
+        "x": "PUB"
+      },
+      "skills": [
+        {
+          "name": "osint-triage",
+          "evidence_class": ""
+        }
+      ]
     }
   },
   {
@@ -113,8 +171,13 @@
     "doc": {
       "id": "did:agent:k0:1009",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "token": { "non_transferable": true, "transferable": false }
+      "public_key": {
+        "x": "PUB"
+      },
+      "token": {
+        "non_transferable": true,
+        "transferable": false
+      }
     }
   },
   {
@@ -123,8 +186,13 @@
     "doc": {
       "id": "did:agent:k0:1010",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "token": { "non_transferable": true, "transfer_to": "did:agent:k0:9999" }
+      "public_key": {
+        "x": "PUB"
+      },
+      "token": {
+        "non_transferable": true,
+        "transfer_to": "did:agent:k0:9999"
+      }
     }
   },
   {
@@ -133,8 +201,13 @@
     "doc": {
       "id": "did:agent:k0:1011",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "token": { "kind": "soulbound", "non_transferable": false }
+      "public_key": {
+        "x": "PUB"
+      },
+      "token": {
+        "kind": "soulbound",
+        "non_transferable": false
+      }
     }
   },
   {
@@ -143,8 +216,12 @@
     "doc": {
       "id": "did:agent:k0:1012",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "token": { "kind": "soulbound" }
+      "public_key": {
+        "x": "PUB"
+      },
+      "token": {
+        "kind": "soulbound"
+      }
     }
   },
   {
@@ -153,7 +230,9 @@
     "doc": {
       "id": "did:agent:k0:1013",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "private_key": "MC4CAQ..."
     }
   },
@@ -163,7 +242,12 @@
     "doc": {
       "id": "did:agent:k0:1014",
       "subject_type": "agent",
-      "public_key": { "kty": "OKP", "crv": "Ed25519", "x": "PUB", "d": "PRIVATE_SCALAR" }
+      "public_key": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "PUB",
+        "d": "PRIVATE_SCALAR"
+      }
     }
   },
   {
@@ -172,7 +256,9 @@
     "doc": {
       "id": "did:agent:k0:1015",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "mnemonic": "word word word ..."
     }
   },
@@ -184,8 +270,14 @@
       "subject_type": "human",
       "email": "x@example.com",
       "private_key": "PRIV",
-      "skills": [{ "name": "x" }],
-      "token": { "transferable": true }
+      "skills": [
+        {
+          "name": "x"
+        }
+      ],
+      "token": {
+        "transferable": true
+      }
     }
   },
   {
@@ -194,7 +286,9 @@
     "doc": {
       "id": "did:agent:k0:1018",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
+      "public_key": {
+        "x": "PUB"
+      },
       "full_name": "Jane Doe"
     }
   },
@@ -204,7 +298,10 @@
     "doc": {
       "id": "did:agent:k0:1019",
       "subject_type": "agent",
-      "public_key": { "x": "PUB", "e-mail": "someone@example.com" }
+      "public_key": {
+        "x": "PUB",
+        "e-mail": "someone@example.com"
+      }
     }
   },
   {
@@ -213,8 +310,49 @@
     "doc": {
       "id": "did:agent:k0:1020",
       "subject_type": "agent",
-      "public_key": { "x": "PUB" },
-      "token": { "non_transferable": true, "policy": { "transfer_to": "did:agent:k0:9999" } }
+      "public_key": {
+        "x": "PUB"
+      },
+      "token": {
+        "non_transferable": true,
+        "policy": {
+          "transfer_to": "did:agent:k0:9999"
+        }
+      }
+    }
+  },
+  {
+    "name": "R2-value-email-in-public_key",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:9001",
+      "subject_type": "agent",
+      "public_key": {
+        "kty": "OKP",
+        "x": "jan@example.com"
+      }
+    }
+  },
+  {
+    "name": "R2-nested-full_name",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:9002",
+      "subject_type": "agent",
+      "public_key": {
+        "full_name": "Jan Kowalski"
+      }
+    }
+  },
+  {
+    "name": "R2-value-phone",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:9003",
+      "subject_type": "agent",
+      "public_key": {
+        "contact": "+48 600 100 200"
+      }
     }
   }
 ]

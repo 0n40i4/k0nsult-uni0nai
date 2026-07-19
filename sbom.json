@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:4fab3d58-7060-4c7b-a8b5-9586c10e5594",
+  "serialNumber": "urn:uuid:027dcddf-dd9c-4fba-bf11-6ecb48a03164",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-19T20:03:30.321Z",
+    "timestamp": "2026-07-19T20:26:12.320Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -15,8 +15,8 @@
     ],
     "component": {
       "type": "application",
-      "bom-ref": "k0nsult-opensource-surface",
-      "name": "K0NSULT open-source surface (ai-truth / uni0nai / ipIII)",
+      "bom-ref": "k0nsult-uni0nai",
+      "name": "k0nsult-uni0nai",
       "version": "1.0.0",
       "licenses": [
         {
@@ -28,8 +28,8 @@
     },
     "properties": [
       {
-        "name": "k0nsult:root",
-        "value": "C:/Users/USER/Desktop/K0NSULT-OSS/k0nsult-uni0nai"
+        "name": "k0nsult:repo",
+        "value": "k0nsult-uni0nai"
       },
       {
         "name": "k0nsult:scope",
@@ -56,7 +56,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "8d10a6e6d827e76d64fd239d55e638b7b9bf30c0853e5a0ee7478896b815022e"
+          "content": "519fd629244f1bf619b00ac2d4f72cf41483eef3a503dd3c53a8f3f669c5c9af"
         }
       ],
       "properties": [
@@ -66,7 +66,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "5463"
+          "value": "6914"
         },
         {
           "name": "k0nsult:surface",
@@ -84,7 +84,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "64fd01211422227399df5d8882cec5c2fb25a3c1d3e32f9528afe769a15f6990"
+          "content": "b72841d94aed311f4403a33e29c1f2006a62f5f736e15683096b52047633389f"
         }
       ],
       "properties": [
@@ -94,7 +94,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "17280"
+          "value": "18492"
         },
         {
           "name": "k0nsult:surface",
@@ -168,7 +168,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "489f9bb1c40a93fcc5367ed961e9a9b3c1be9b089b7d8e8067155ddc8c9cbe64"
+          "content": "a2286fb429059a2911e1c1d9a91edd1f1d117f3ec1d932c5d60f2bc2510efcbe"
         }
       ],
       "properties": [
@@ -178,7 +178,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "25003"
+          "value": "26021"
         },
         {
           "name": "k0nsult:surface",
