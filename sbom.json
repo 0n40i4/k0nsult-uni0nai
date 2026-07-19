@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:0be38efe-4269-477c-927d-5dd7abb0d0aa",
+  "serialNumber": "urn:uuid:8b40d3d6-fbff-48ab-8a34-66ba1963e20d",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-19T08:52:02.807Z",
+    "timestamp": "2026-07-19T09:05:39.220Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -34,7 +34,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":8,\"files_html\":0,\"data_json\":4,\"code_files\":0,\"other_files\":4,\"node_libraries\":0}"
+        "value": "{\"total\":11,\"files_html\":0,\"data_json\":4,\"code_files\":0,\"other_files\":7,\"node_libraries\":0}"
       }
     ]
   },
@@ -228,6 +228,90 @@
         {
           "name": "k0nsult:bytes",
           "value": "4856"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:spec/DID-METHOD-SPEC.md",
+      "name": "DID-METHOD-SPEC.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d7d3bdd59bcf9b6436c2ee3199860819b80fb1496c1f11e0a53f49258d784aa6"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "spec/DID-METHOD-SPEC.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "10714"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:spec/ESCO-EUROPASS-CROSSWALK.md",
+      "name": "ESCO-EUROPASS-CROSSWALK.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ea9d2da561be59e22c01d78d6da604f15c2b0df35ebb33325c9f6aacdd4b123a"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "spec/ESCO-EUROPASS-CROSSWALK.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "7300"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:spec/EU-CROSSWALK.md",
+      "name": "EU-CROSSWALK.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "99eefeaaeccb2377831c2bb0bfb3681c70440f4f273769026cb2c996c6cbfbd2"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "spec/EU-CROSSWALK.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "8038"
         },
         {
           "name": "k0nsult:surface",
