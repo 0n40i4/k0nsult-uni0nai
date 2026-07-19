@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:6effe2b4-6bc7-42b9-8c3b-6610040527d3",
+  "serialNumber": "urn:uuid:4e8037af-247a-4e05-aec2-11ff00536efb",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-19T09:37:32.270Z",
+    "timestamp": "2026-07-19T09:52:12.250Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -34,7 +34,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":12,\"files_html\":0,\"data_json\":4,\"code_files\":1,\"other_files\":7,\"node_libraries\":0}"
+        "value": "{\"total\":13,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":7,\"node_libraries\":0}"
       }
     ]
   },
@@ -144,6 +144,34 @@
         {
           "name": "k0nsult:bytes",
           "value": "6903"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:did-resolver.mjs",
+      "name": "did-resolver.mjs",
+      "group": "code",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fd9047d45a050757947e22615330511fe77acc77fe3f9b1681e626b383d634b1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "did-resolver.mjs"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "20630"
         },
         {
           "name": "k0nsult:surface",
