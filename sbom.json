@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:8b40d3d6-fbff-48ab-8a34-66ba1963e20d",
+  "serialNumber": "urn:uuid:6effe2b4-6bc7-42b9-8c3b-6610040527d3",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-19T09:05:39.220Z",
+    "timestamp": "2026-07-19T09:37:32.270Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -34,7 +34,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":11,\"files_html\":0,\"data_json\":4,\"code_files\":0,\"other_files\":7,\"node_libraries\":0}"
+        "value": "{\"total\":12,\"files_html\":0,\"data_json\":4,\"code_files\":1,\"other_files\":7,\"node_libraries\":0}"
       }
     ]
   },
@@ -49,7 +49,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "700f450e7e3e58acf11bf1d6851b106d9871c35f7ea6faad454fb0bd1d64a745"
+          "content": "8a6a4188f905da40d83fefc79690ef19f909cb17a1bd0379bf2bdd46ed274c4a"
         }
       ],
       "properties": [
@@ -59,7 +59,35 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "9224"
+          "value": "4727"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:conformance.mjs",
+      "name": "conformance.mjs",
+      "group": "code",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2df4ada9b3d2757de06a395b3d47230a331aa73431e6dcf1e6edfeff2e3f211e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "conformance.mjs"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "13935"
         },
         {
           "name": "k0nsult:surface",
@@ -217,7 +245,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "9969ab6824e75a377abd4a828cc7b4c56c7830595f53a111a5e9eea83eae86d8"
+          "content": "35ea9e09ab57ff1d744b6810f484434d40b82713b276e9bbc0de387a62ade531"
         }
       ],
       "properties": [
@@ -227,7 +255,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "4856"
+          "value": "2958"
         },
         {
           "name": "k0nsult:surface",

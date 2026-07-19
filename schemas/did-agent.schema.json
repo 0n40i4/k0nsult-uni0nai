@@ -1,125 +1,66 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://k0nsult.dev/schema/did-agent/1.0",
-  "title": "K0NSULT Agent Identity (did:k0nsult)",
-  "description": "Identity document for a federation AGENT. Doctrine: agents-not-people (subject_type MUST be 'agent', ZERO personal-identification fields), soulbound reputation is non-transferable (NOT a crypto asset), No Password Custody (public keys only), claim <= proof (every skill carries an evidence_class). This is the contract, not the engine.",
+  "$id": "https://uni0nai.k0nsult.commons/schemas/did-agent.schema.json",
+  "title": "K0NSULT uni0nai DID-Agent",
+  "description": "Soulbound identity document for a NON-HUMAN agent. Doctrine: claim<=proof, agents-not-people (zero person PII), soulbound != crypto (non-transferable), No Password Custody (public key only, tool never holds a private key). conformance.mjs enforces the KEY rules (R1..R5) marked below; this schema is the human-readable contract.",
   "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "did",
-    "subject_type",
-    "provider",
-    "model",
-    "role",
-    "public_key",
-    "soulbound_token",
-    "skills",
-    "sovereignty_manifest"
-  ],
+  "required": ["id", "subject_type", "public_key"],
+  "additionalProperties": true,
   "properties": {
-    "did": {
+    "id": {
       "type": "string",
-      "description": "did:k0nsult:<provider>:<model>:<role>. Subject is always an agent.",
-      "pattern": "^did:k0nsult:[A-Za-z0-9-]+:[A-Za-z0-9._-]+:[A-Za-z0-9._-]+$"
+      "description": "DID of the agent, e.g. did:agent:k0:0001."
     },
     "subject_type": {
-      "const": "agent",
-      "description": "MUST be 'agent'. Natural persons are never subjects (agents-not-people). Any other value is invalid."
-    },
-    "provider": { "type": "string", "minLength": 1 },
-    "model": { "type": "string", "minLength": 1 },
-    "role": {
-      "enum": ["executor", "orchestrator", "judge", "observer", "registry"]
+      "description": "R1 (enforced): MUST equal the constant 'agent'. Any other value or absence => FAIL. Guarantees no natural person is the subject.",
+      "const": "agent"
     },
     "public_key": {
+      "description": "R5 (enforced): public key material only. Private-key fields (private_key, secret_key, seed, mnemonic, JWK 'd') anywhere in the document => FAIL. The tool never generates or holds a private key; signing happens with the operator, outside the tool.",
       "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "value"],
-      "properties": {
-        "type": { "enum": ["ed25519", "ecdsa-p256"] },
-        "value": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Public verification key ONLY. No private-key material is ever carried (No Password Custody)."
-        }
-      }
-    },
-    "soulbound_token": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Non-transferable reputation record bound to this agent's DID. NOT a crypto asset: no balance, no transfer, no bridge.",
-      "required": ["token_id", "non_transferable", "issued_at"],
-      "properties": {
-        "token_id": { "type": "string", "minLength": 1 },
-        "non_transferable": {
-          "const": true,
-          "description": "Hard constant. Soulbound reputation cannot be transferred or sold."
-        },
-        "issued_at": { "type": "string", "format": "date-time" },
-        "reputation_score": { "type": "number", "minimum": 0, "maximum": 100 },
-        "bound_to": {
-          "type": "string",
-          "pattern": "^did:k0nsult:",
-          "description": "Must equal this agent's own DID. Reputation does not detach from its agent."
-        }
+      "not": {
+        "anyOf": [
+          { "required": ["d"] },
+          { "required": ["private_key"] },
+          { "required": ["secret_key"] }
+        ]
       }
     },
     "skills": {
       "type": "array",
-      "minItems": 0,
-      "description": "Declared capabilities. Each carries an evidence_class (claim <= proof at capability level).",
+      "description": "R3 (enforced): each skill MUST carry a non-empty evidence_class. A skill without evidence_class => FAIL (claim<=proof).",
       "items": {
         "type": "object",
-        "additionalProperties": false,
-        "required": ["skill_id", "name", "evidence_class"],
+        "required": ["evidence_class"],
         "properties": {
-          "skill_id": { "type": "string", "minLength": 1 },
-          "name": { "type": "string", "minLength": 1 },
-          "version": { "type": "string" },
+          "name": { "type": "string" },
           "evidence_class": {
-            "enum": ["DOWOD", "GAP", "NARRACJA"],
-            "description": "Mandatory. A skill without an evidence class is an unbounded claim and is invalid."
+            "type": "string",
+            "minLength": 1,
+            "description": "Evidence tier backing the skill claim (e.g. A/B/C)."
           }
         }
       }
     },
-    "sovereignty_manifest": {
+    "token": {
       "type": "object",
-      "additionalProperties": false,
-      "required": ["host_region", "engine_disclosed"],
+      "description": "R4 (enforced): soulbound token. non_transferable MUST be exactly true. Any transfer-shaped field (transfer, transferable, transfer_to, transfer_hook, approve, allowance, ...) => FAIL. Soulbound is an identity binding, NOT a crypto asset.",
+      "required": ["non_transferable"],
       "properties": {
-        "host_region": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Hosting region, e.g. 'EU'."
-        },
-        "jurisdiction": { "type": "string" },
-        "engine_disclosed": {
-          "type": "boolean",
-          "description": "Whether the runtime engine is open. Contract is open even when engine is hidden (silnik ukryty)."
-        },
-        "broker_free": {
-          "type": "boolean",
-          "description": "True = reachable without a non-EU broker (COM(2026)503 interoperability goal)."
-        }
+        "non_transferable": { "const": true },
+        "kind": { "type": "string" }
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["transfer"] },
+          { "required": ["transferable"] },
+          { "required": ["transfer_to"] },
+          { "required": ["transfer_hook"] },
+          { "required": ["approve"] },
+          { "required": ["allowance"] }
+        ]
       }
-    },
-    "created_at": { "type": "string", "format": "date-time" }
+    }
   },
-  "not": {
-    "$comment": "Explicit anti-PID guard (belt-and-suspenders over additionalProperties:false). A conformant agent identity carries ZERO personal-identification data and ZERO private-key material.",
-    "anyOf": [
-      { "required": ["natural_person"] },
-      { "required": ["person_name"] },
-      { "required": ["full_name"] },
-      { "required": ["email"] },
-      { "required": ["phone"] },
-      { "required": ["national_id"] },
-      { "required": ["pesel"] },
-      { "required": ["date_of_birth"] },
-      { "required": ["human_operator"] },
-      { "required": ["private_key"] },
-      { "required": ["secret_key"] }
-    ]
-  }
+  "$comment": "R2 (enforced by conformance.mjs, not expressible cleanly per-property here): person PII keys (person, email, pesel, national_id) are forbidden ANYWHERE in the document tree => FAIL."
 }
