@@ -2,10 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://uni0nai.k0nsult.commons/schemas/did-agent.schema.json",
   "title": "K0NSULT uni0nai DID-Agent",
-  "description": "Soulbound identity document for a NON-HUMAN agent. Doctrine: claim<=proof, agents-not-people (zero person PII), soulbound != crypto (non-transferable), No Password Custody (public key only, tool never holds a private key). conformance.mjs enforces the KEY rules (R1..R5) marked below; this schema is the human-readable contract.",
+  "description": "Soulbound identity document for a NON-HUMAN agent. Doctrine: claim<=proof, agents-not-people (zero person PII), soulbound != crypto (non-transferable), No Password Custody (public key only, tool never holds a private key). conformance.mjs enforces the KEY rules (R1..R6) marked below; this schema is the human-readable contract.",
   "type": "object",
   "required": ["id", "subject_type", "public_key"],
-  "additionalProperties": true,
+  "additionalProperties": false,
+  "$comment_r6": "R6 (enforced): the document is CLOSED. additionalProperties:false is the structural allowlist — an unenumerated person-PII key (full_name, phone, address, date_of_birth, ...) can no longer ride through as a clean agent. A denylist alone could never enumerate them all.",
   "properties": {
     "id": {
       "type": "string",
@@ -44,8 +45,9 @@
     },
     "token": {
       "type": "object",
-      "description": "R4 (enforced): soulbound token. non_transferable MUST be exactly true. Any transfer-shaped field (transfer, transferable, transfer_to, transfer_hook, approve, allowance, ...) => FAIL. Soulbound is an identity binding, NOT a crypto asset.",
+      "description": "R4 (enforced): soulbound token. non_transferable MUST be exactly true. additionalProperties:false closes the object so any transfer-shaped field (transfer, transferable, transfer_to, transfer_hook, approve, allowance, ...) at ANY depth => FAIL. conformance.mjs additionally scans transfer-shaped keys DEEP (nested transfer_to under token cannot slip past). Soulbound is an identity binding, NOT a crypto asset.",
       "required": ["non_transferable"],
+      "additionalProperties": false,
       "properties": {
         "non_transferable": { "const": true },
         "kind": { "type": "string" }
@@ -60,7 +62,30 @@
           { "required": ["allowance"] }
         ]
       }
+    },
+    "rotation_ref": {
+      "type": "string",
+      "description": "Fingerprint (sha256:<hex>) of the immediately-prior PUBLIC key after a rotation (did-resolver.rotate). Public-key chain pointer only; carries no secret."
+    },
+    "key_rotations": {
+      "type": "array",
+      "description": "Append-only chain of PUBLIC-key rotation events (did-resolver.rotate). No private material, ever (No Password Custody).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["previous_public_key", "new_public_key", "rotation_ref", "rotated_at"],
+        "properties": {
+          "previous_public_key": { "type": "object" },
+          "new_public_key": { "type": "object" },
+          "rotation_ref": { "type": "string" },
+          "rotated_at": {
+            "type": "string",
+            "description": "Strict ISO-8601 timestamp: YYYY-MM-DDThh:mm:ss[.sss](Z|±hh:mm).",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          }
+        }
+      }
     }
   },
-  "$comment": "R2 (enforced by conformance.mjs, not expressible cleanly per-property here): person PII keys (person, email, pesel, national_id) are forbidden ANYWHERE in the document tree => FAIL."
+  "$comment": "R2 (enforced by conformance.mjs, not expressible cleanly per-property here): person PII keys (person, email/e-mail, pesel, national_id, ssn) are forbidden ANYWHERE in the document tree => FAIL. R6 (additionalProperties:false above) is the top-level structural allowlist."
 }

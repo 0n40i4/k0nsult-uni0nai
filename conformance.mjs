@@ -22,28 +22,54 @@ import process from 'node:process';
 
 // ---------------------------------------------------------------------------
 // Forbidden key vocabularies (case-insensitive, matched on object KEYS only).
+// Every vocabulary is passed through `norm` at construction time (F4): a listed
+// spelling such as 'e-mail' MUST be stored in its normalized form ('e_mail'),
+// otherwise `Set.has(norm(rawKey))` would silently miss the hyphenated variant.
 // ---------------------------------------------------------------------------
 
-// R2 — person-identifying fields. Their mere presence anywhere fails the doc.
-const PII_KEYS = new Set([
-  'person', 'email', 'pesel', 'national_id', 'nationalid',
-]);
+const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
 
-// R4 — transfer-shaped fields on a token. Soulbound => non-transferable.
+// R2 — person-identifying fields. Their mere presence anywhere fails the doc.
+// Belt to the R6 allowlist's braces: catches classic identity keys even when
+// they hide NESTED under an otherwise-allowed top-level key (e.g. public_key).
+const PII_KEYS = new Set(
+  [
+    'person', 'email', 'e-mail', 'pesel',
+    'national_id', 'national-id', 'nationalid',
+    'ssn',
+  ].map(norm)
+);
+
+// R4 — transfer-shaped fields. Soulbound => non-transferable, so ANY transfer-
+// shaped key ANYWHERE in the document fails it (F6: deep, not just token top).
 // (non_transferable is the ALLOWED assertion and is handled separately.)
-const TRANSFER_KEYS = new Set([
-  'transfer', 'transferable', 'transferrable', 'transfer_to', 'transferto',
-  'transfer_hook', 'transferhook', 'approve', 'allowance', 'transfer_from',
-  'transferfrom',
-]);
+const TRANSFER_KEYS = new Set(
+  [
+    'transfer', 'transferable', 'transferrable', 'transfer_to', 'transferto',
+    'transfer_hook', 'transferhook', 'approve', 'allowance', 'transfer_from',
+    'transferfrom',
+  ].map(norm)
+);
 
 // R5 — private key material. Public-key-only tooling never holds these.
-const PRIVATE_KEY_KEYS = new Set([
-  'private_key', 'privatekey', 'secret_key', 'secretkey',
-  'seed', 'mnemonic', 'd', // 'd' is the JWK private exponent
-]);
+const PRIVATE_KEY_KEYS = new Set(
+  [
+    'private_key', 'privatekey', 'secret_key', 'secretkey',
+    'seed', 'mnemonic', 'd', // 'd' is the JWK private exponent
+  ].map(norm)
+);
 
-const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+// R6 — CLOSED document shape (allowlist). A denylist can never enumerate every
+// person-PII field (full_name, phone, address, date_of_birth, ...). The agent
+// document is therefore closed: only these top-level keys are permitted; any
+// other top-level key => FAIL. This is the structural guard that the old open
+// schema (additionalProperties:true) lacked (F3).
+const ALLOWED_TOP_KEYS = new Set(
+  [
+    'id', 'subject_type', 'public_key', 'skills', 'token',
+    'rotation_ref', 'key_rotations',
+  ].map(norm)
+);
 
 // Deep-walk every key in the document. cb(normalizedKey, rawKey, path, value).
 function walkKeys(node, cb, path = '$') {
@@ -77,10 +103,26 @@ function validate(doc) {
     );
   }
 
-  // R2 / R5 — forbidden keys anywhere in the tree.
+  // R6 — closed document shape (allowlist). Any top-level key outside the
+  // whitelist => FAIL. Closes the open-schema bypass that let unenumerated PII
+  // (full_name, phone, address, ...) ride through as a "clean" agent (F3).
+  for (const rawKey of Object.keys(doc)) {
+    if (!ALLOWED_TOP_KEYS.has(norm(rawKey))) {
+      reasons.push(
+        `R6: top-level key "${rawKey}" is not in the closed agent schema allowlist`
+      );
+    }
+  }
+
+  // R2 / R4 / R5 — forbidden keys anywhere in the tree (deep).
+  //   R2 person PII, R4 transfer-shaped fields (soulbound != crypto),
+  //   R5 private key material. Deep so nothing hides under a nested object.
   walkKeys(doc, (k, _raw, path) => {
     if (PII_KEYS.has(k)) {
       reasons.push(`R2: person PII field forbidden at ${path} ("${k}")`);
+    }
+    if (TRANSFER_KEYS.has(k)) {
+      reasons.push(`R4: transfer-shaped field forbidden at ${path} ("${k}")`);
     }
     if (PRIVATE_KEY_KEYS.has(k)) {
       reasons.push(`R5: private key material forbidden at ${path} ("${k}")`);
@@ -101,7 +143,10 @@ function validate(doc) {
     }
   }
 
-  // R4 — soulbound token rules. Applied to doc.token (and any nested "token").
+  // R4 (positive assertion) — every soulbound token MUST assert
+  // non_transferable:true. The negative side (no transfer-shaped field) is
+  // enforced by the DEEP TRANSFER_KEYS scan above, so a transfer_to buried in a
+  // nested object under the token can no longer slip past a shallow key check.
   walkKeys(doc, (k, _raw, path, value) => {
     if (k !== 'token') return;
     if (value === null || typeof value !== 'object' || Array.isArray(value)) return;
@@ -111,12 +156,6 @@ function validate(doc) {
       reasons.push(
         `R4: token at ${path} must set non_transferable:true (soulbound)`
       );
-    }
-    // Any transfer-shaped field is forbidden on the token object.
-    for (const rk of Object.keys(value)) {
-      if (TRANSFER_KEYS.has(norm(rk))) {
-        reasons.push(`R4: transfer field forbidden on token at ${path} ("${rk}")`);
-      }
     }
   });
 
@@ -317,6 +356,46 @@ const GOLDEN_VECTORS = [
       private_key: 'PRIV',
       skills: [{ name: 'x' }],
       token: { transferable: true },
+    },
+  },
+  // --- NEGATIVE regressions proving the judge's exploits are now blocked -----
+  // F3: an OPEN schema + denylist let unenumerated PII ride through as a clean
+  // agent. `full_name` is deliberately NOT in the PII denylist — this vector
+  // PASSED before and now FAILs *solely* via the R6 closed-schema allowlist.
+  {
+    name: 'fail-allowlist-full-name-top',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:agent:k0:1018',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      full_name: 'Jane Doe',
+    },
+  },
+  // F4: the denylist Set is now built through `norm`, so the hyphenated
+  // spelling 'e-mail' (=> 'e_mail') is caught. Nested under public_key so the
+  // R6 top-level allowlist does NOT fire — only the normalized R2 denylist can.
+  // PASSED before the F4 fix (Set held 'email', never 'e_mail').
+  {
+    name: 'fail-pii-email-hyphen-nested',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:agent:k0:1019',
+      subject_type: 'agent',
+      public_key: { x: 'PUB', 'e-mail': 'someone@example.com' },
+    },
+  },
+  // F6: transfer-shaped fields were only checked on the token's OWN keys, so a
+  // transfer_to buried one level deeper (token.policy.transfer_to) escaped.
+  // Now the deep TRANSFER_KEYS scan catches it. PASSED before the F6 fix.
+  {
+    name: 'fail-token-transfer-nested',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:agent:k0:1020',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      token: { non_transferable: true, policy: { transfer_to: 'did:agent:k0:9999' } },
     },
   },
 ];

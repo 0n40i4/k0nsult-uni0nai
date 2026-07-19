@@ -40,19 +40,43 @@ const DID_RE =
 // spec §2: role is drawn from the federation role enum.
 const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
 
+// Strict ISO-8601 instant: YYYY-MM-DDThh:mm:ss[.sss](Z | ±hh:mm).
+// Date.parse is far too permissive (accepts '2026-07-19', '07/19/2026', locale
+// strings), so rotate() no longer trusts it as the gate (F13).
+const ISO8601_RE =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
 // ---------------------------------------------------------------------------
 // Forbidden key vocabularies (case-insensitive, matched on object KEYS only).
 // Mirror of conformance.mjs so resolution-time invariants == storage-time ones.
 // ---------------------------------------------------------------------------
-const PII_KEYS = new Set([
-  'person', 'email', 'pesel', 'national_id', 'nationalid', 'ssn',
-]);
-const PRIVATE_KEY_KEYS = new Set([
-  'private_key', 'privatekey', 'secret_key', 'secretkey', 'secret',
-  'seed', 'mnemonic', 'd', // 'd' is the JWK private exponent/scalar
-]);
-
+// Sets are built through `norm` (F4): a listed spelling like 'e-mail' is stored
+// normalized ('e_mail'), so `Set.has(norm(rawKey))` cannot miss a hyphenated
+// variant. Applies to every vocabulary below.
 const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+
+const PII_KEYS = new Set(
+  [
+    'person', 'email', 'e-mail', 'pesel',
+    'national_id', 'national-id', 'nationalid', 'ssn',
+  ].map(norm)
+);
+const PRIVATE_KEY_KEYS = new Set(
+  [
+    'private_key', 'privatekey', 'secret_key', 'secretkey', 'secret',
+    'seed', 'mnemonic', 'd', // 'd' is the JWK private exponent/scalar
+  ].map(norm)
+);
+
+// Closed document shape (allowlist). Denylists cannot enumerate every person-PID
+// field; the agent document is therefore closed to these top-level keys only —
+// any other top-level key => FAIL (agents-not-people, structural guard).
+const ALLOWED_TOP_KEYS = new Set(
+  [
+    'id', 'subject_type', 'public_key', 'skills', 'token',
+    'rotation_ref', 'key_rotations',
+  ].map(norm)
+);
 
 class K0Error extends Error {}
 
@@ -75,6 +99,15 @@ function firstPrivatePath(node) {
   let hit = null;
   walkKeys(node, (k, _raw, path) => {
     if (hit === null && PRIVATE_KEY_KEYS.has(k)) hit = `${path} ("${k}")`;
+  });
+  return hit;
+}
+
+// First path at which person-PID material appears, or null.
+function firstPiiPath(node) {
+  let hit = null;
+  walkKeys(node, (k, _raw, path) => {
+    if (hit === null && PII_KEYS.has(k)) hit = `${path} ("${k}")`;
   });
   return hit;
 }
@@ -121,6 +154,7 @@ function parse(did) {
 //   V3  public_key present (object) — public verification material.
 //   V4  HARD: no private-key material ANYWHERE (No Password Custody).
 //   V5  no natural-person PID ANYWHERE (agents-not-people).
+//   V6  closed document shape — only allowlisted top-level keys (F3).
 // PASS only when none are violated.
 // ---------------------------------------------------------------------------
 function validate(doc) {
@@ -151,6 +185,15 @@ function validate(doc) {
     reasons.push('V3: public_key (object) is required — public verification material');
   }
 
+  // V6 — closed document shape (allowlist). Any top-level key outside the
+  // whitelist => FAIL. Denylists can never enumerate every person-PID field
+  // (full_name, phone, address, ...); the closed schema is the structural guard.
+  for (const rawKey of Object.keys(doc)) {
+    if (!ALLOWED_TOP_KEYS.has(norm(rawKey))) {
+      reasons.push(`V6: top-level key "${rawKey}" is not in the closed agent schema allowlist`);
+    }
+  }
+
   // V4 / V5 — forbidden keys anywhere in the tree.
   walkKeys(doc, (k, _raw, path) => {
     if (PRIVATE_KEY_KEYS.has(k)) {
@@ -176,6 +219,8 @@ function fingerprint(publicKey) {
 // spec §6.2: replace the active verification key WITHOUT any secret leaving the
 // operator. The tool touches PUBLIC keys only:
 //   - refuses any newPublicKey carrying private material (No Password Custody);
+//   - refuses any newPublicKey carrying person PID (agents-not-people, F13);
+//   - requires a STRICT ISO-8601 timestamp (F13; Date.parse is too loose);
 //   - preserves the prior public key via an append-only rotation event;
 //   - sets rotation_ref (top-level) to the immediately-prior key's fingerprint;
 //   - NEVER reads, copies or emits a private key (there is none to touch).
@@ -193,8 +238,15 @@ function rotate(doc, newPublicKey, tsISO) {
   if (priv) {
     throw new K0Error(`rotate: newPublicKey carries private material at ${priv} — No Password Custody (public keys only)`);
   }
-  if (typeof tsISO !== 'string' || Number.isNaN(Date.parse(tsISO))) {
-    throw new K0Error('rotate: tsISO must be an ISO-8601 timestamp string');
+  // agents-not-people: refuse to introduce ANY person-PID via the new key (F13).
+  const pii = firstPiiPath(newPublicKey);
+  if (pii) {
+    throw new K0Error(`rotate: newPublicKey carries person PII at ${pii} — agents-not-people (public keys only)`);
+  }
+  // Strict ISO-8601 only. Date.parse alone accepts loose forms ('2026-07-19',
+  // '07/19/2026'); require the regex AND a real instant (F13).
+  if (typeof tsISO !== 'string' || !ISO8601_RE.test(tsISO) || Number.isNaN(Date.parse(tsISO))) {
+    throw new K0Error('rotate: tsISO must be a strict ISO-8601 timestamp (YYYY-MM-DDThh:mm:ss[.sss](Z|±hh:mm))');
   }
   const prevPublicKey = doc.public_key;
   if (prevPublicKey === null || typeof prevPublicKey !== 'object' || Array.isArray(prevPublicKey)) {
@@ -353,6 +405,20 @@ const VALIDATE_CASES = [
       public_key: { type: 'ed25519', value: 'PUB' },
     },
   },
+  // NEGATIVE regression (F3): an OPEN schema + denylist let unenumerated PII
+  // ride through as a clean agent. `full_name` is NOT in the PII denylist — a
+  // valid id/role/public_key otherwise; this PASSED before and now FAILs solely
+  // via the V6 closed-schema allowlist.
+  {
+    name: 'validate-fail-allowlist-full-name',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:claude:opus:judge',
+      subject_type: 'agent',
+      public_key: { type: 'ed25519', value: 'PUB' },
+      full_name: 'Jane Doe',
+    },
+  },
 ];
 
 // -- rotate() cases (behavioural asserts) ------------------------------------
@@ -432,6 +498,44 @@ const ROTATE_CASES = [
       try {
         rotate(base, { type: 'ed25519', value: 'PUB_K1' }, 'not-a-date');
         return fail('rotate accepted a non-ISO timestamp');
+      } catch (e) {
+        return e instanceof K0Error ? ok() : fail(`unexpected error: ${e.message}`);
+      }
+    },
+  },
+  // NEGATIVE regression (F13): rotate() must scan the NEW public key for person
+  // PID, not just private material. An `email` smuggled into newPublicKey passed
+  // silently before; it must now throw (agents-not-people).
+  {
+    name: 'rotate-rejects-pii-in-new-key',
+    run() {
+      const base = {
+        id: 'did:k0nsult:claude:opus:judge',
+        subject_type: 'agent',
+        public_key: { type: 'ed25519', value: 'PUB_K0' },
+      };
+      try {
+        rotate(base, { type: 'ed25519', value: 'PUB', email: 'x@example.com' }, '2026-07-19T10:00:00Z');
+        return fail('rotate accepted person PII in newPublicKey (agents-not-people breach)');
+      } catch (e) {
+        return e instanceof K0Error ? ok() : fail(`unexpected error: ${e.message}`);
+      }
+    },
+  },
+  // NEGATIVE regression (F13): a date-only string ('2026-07-19') satisfies
+  // Date.parse but is NOT a strict ISO-8601 instant. It PASSED the old
+  // Date.parse gate; the strict ISO8601_RE must now reject it.
+  {
+    name: 'rotate-rejects-loose-date',
+    run() {
+      const base = {
+        id: 'did:k0nsult:claude:opus:judge',
+        subject_type: 'agent',
+        public_key: { type: 'ed25519', value: 'PUB_K0' },
+      };
+      try {
+        rotate(base, { type: 'ed25519', value: 'PUB_K1' }, '2026-07-19');
+        return fail('rotate accepted a loose (non-ISO8601) date that Date.parse allows');
       } catch (e) {
         return e instanceof K0Error ? ok() : fail(`unexpected error: ${e.message}`);
       }

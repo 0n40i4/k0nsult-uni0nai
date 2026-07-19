@@ -187,5 +187,34 @@
       "skills": [{ "name": "x" }],
       "token": { "transferable": true }
     }
+  },
+  {
+    "name": "fail-allowlist-full-name-top",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:1018",
+      "subject_type": "agent",
+      "public_key": { "x": "PUB" },
+      "full_name": "Jane Doe"
+    }
+  },
+  {
+    "name": "fail-pii-email-hyphen-nested",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:1019",
+      "subject_type": "agent",
+      "public_key": { "x": "PUB", "e-mail": "someone@example.com" }
+    }
+  },
+  {
+    "name": "fail-token-transfer-nested",
+    "expect": "FAIL",
+    "doc": {
+      "id": "did:agent:k0:1020",
+      "subject_type": "agent",
+      "public_key": { "x": "PUB" },
+      "token": { "non_transferable": true, "policy": { "transfer_to": "did:agent:k0:9999" } }
+    }
   }
 ]
