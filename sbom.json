@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:adb2c795-dfdf-4c98-9d9a-8a70f29f7b1b",
+  "serialNumber": "urn:uuid:0be38efe-4269-477c-927d-5dd7abb0d0aa",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-18T22:00:55.843Z",
+    "timestamp": "2026-07-19T08:52:02.807Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -34,11 +34,39 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":5,\"files_html\":0,\"data_json\":2,\"code_files\":0,\"other_files\":3,\"node_libraries\":0}"
+        "value": "{\"total\":8,\"files_html\":0,\"data_json\":4,\"code_files\":0,\"other_files\":4,\"node_libraries\":0}"
       }
     ]
   },
   "components": [
+    {
+      "type": "data",
+      "bom-ref": "surface:conformance/golden-vectors.json",
+      "name": "golden-vectors.json",
+      "group": "data",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "700f450e7e3e58acf11bf1d6851b106d9871c35f7ea6faad454fb0bd1d64a745"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "conformance/golden-vectors.json"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "9224"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
     {
       "type": "data",
       "bom-ref": "surface:contract/acp-schema.json",
@@ -172,6 +200,62 @@
         {
           "name": "k0nsult:bytes",
           "value": "2037"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "bom-ref": "surface:schemas/did-agent.schema.json",
+      "name": "did-agent.schema.json",
+      "group": "data",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9969ab6824e75a377abd4a828cc7b4c56c7830595f53a111a5e9eea83eae86d8"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "schemas/did-agent.schema.json"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "4856"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:spec/SPEC.md",
+      "name": "SPEC.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fa903c777f8a1257d30d4cf7d64d3f0ef31268efeb73a85ff6becbbf4d13b92b"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "spec/SPEC.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "7270"
         },
         {
           "name": "k0nsult:surface",

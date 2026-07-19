@@ -1,0 +1,214 @@
+{
+  "$comment": "Conformance golden vectors for schemas/did-agent.schema.json. An implementation is conformant when it ACCEPTS every 'PASS' vector and REJECTS every 'FAIL' vector using that schema. Negative vectors encode the doctrine: soulbound=non-transferable, skill carries evidence_class, subject=agent only, zero PII, No Password Custody, well-formed DID.",
+  "schema_ref": "../schemas/did-agent.schema.json",
+  "schema_id": "https://k0nsult.dev/schema/did-agent/1.0",
+  "version": "1.0",
+  "vectors": [
+    {
+      "id": "gv-001-valid-judge-agent",
+      "expect": "PASS",
+      "reason": "Fully-formed agent identity: subject_type=agent, public key only, non-transferable soulbound token, every skill carries an evidence_class, sovereignty manifest present.",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64OnlyNoSecret==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z",
+          "reputation_score": 74,
+          "bound_to": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE"
+        },
+        "skills": [
+          { "skill_id": "skill_judge_panel", "name": "judge-panel", "version": "2.0.0", "evidence_class": "DOWOD" },
+          { "skill_id": "skill_dowod_gap", "name": "dowod-albo-gap", "version": "1.0.0", "evidence_class": "DOWOD" }
+        ],
+        "sovereignty_manifest": {
+          "host_region": "EU",
+          "jurisdiction": "PL",
+          "engine_disclosed": false,
+          "broker_free": true
+        },
+        "created_at": "2026-07-19T00:00:00Z"
+      }
+    },
+    {
+      "id": "gv-002-valid-executor-no-skills",
+      "expect": "PASS",
+      "reason": "Minimal executor with an empty skill set is valid: skills array may be empty; only declared skills must carry an evidence_class.",
+      "input": {
+        "did": "did:k0nsult:kopernik:codex-1:EXECUTOR",
+        "subject_type": "agent",
+        "provider": "kopernik",
+        "model": "codex-1",
+        "role": "executor",
+        "public_key": { "type": "ecdsa-p256", "value": "BFexamplePublicKeyBase64OnlyNoSecret" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:0a1b2c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false, "broker_free": true }
+      }
+    },
+    {
+      "id": "gv-100-soulbound-transferable-FAIL",
+      "expect": "FAIL",
+      "reason": "Soulbound reputation must be non-transferable. This token sets non_transferable=false AND carries a transfer_to field; the closed token object rejects the extra field and the const rejects the false value.",
+      "violates": "soulbound = non-transferable (NOT crypto)",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": false,
+          "transfer_to": "did:k0nsult:other:model:role",
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-101-skill-missing-evidence-class-FAIL",
+      "expect": "FAIL",
+      "reason": "Every declared skill must carry an evidence_class (claim <= proof). This skill omits the field.",
+      "violates": "claim <= proof (skill evidence_class mandatory)",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [
+          { "skill_id": "skill_judge_panel", "name": "judge-panel", "version": "2.0.0" }
+        ],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-102-subject-type-not-agent-FAIL",
+      "expect": "FAIL",
+      "reason": "Subjects are agents only. subject_type='person' violates agents-not-people.",
+      "violates": "agents-not-people (subject_type MUST be 'agent')",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "person",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-103-personal-identification-present-FAIL",
+      "expect": "FAIL",
+      "reason": "Zero PII in the wire format. This document carries personal-identification fields (natural_person, email); both the closed object and the anti-PID guard reject it.",
+      "violates": "zero PII (no personal-identification data)",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "natural_person": "REDACTED-must-not-exist-in-agent-identity",
+        "email": "REDACTED-must-not-exist@example.invalid",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-104-private-key-material-FAIL",
+      "expect": "FAIL",
+      "reason": "No Password Custody: the wire format carries public keys only. This document carries private-key material; the closed object and the anti-PID/anti-secret guard reject it.",
+      "violates": "No Password Custody (public keys only)",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "private_key": "REDACTED-secret-must-never-be-carried",
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-105-malformed-did-FAIL",
+      "expect": "FAIL",
+      "reason": "DID must be did:k0nsult:<provider>:<model>:<role>. This value has only one segment after the method and fails the pattern.",
+      "violates": "well-formed did:k0nsult:*",
+      "input": {
+        "did": "did:k0nsult:claude",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    },
+    {
+      "id": "gv-106-invalid-evidence-class-value-FAIL",
+      "expect": "FAIL",
+      "reason": "evidence_class is a closed enum {DOWOD, GAP, NARRACJA}. 'PROVEN' is not a member.",
+      "violates": "claim <= proof (evidence_class enum)",
+      "input": {
+        "did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
+        "subject_type": "agent",
+        "provider": "claude",
+        "model": "opus-4.7-1m",
+        "role": "judge",
+        "public_key": { "type": "ed25519", "value": "MCowBQYDK2VwAyEAexamplePublicKeyBase64==" },
+        "soulbound_token": {
+          "token_id": "sbt:k0nsult:8f3a1c",
+          "non_transferable": true,
+          "issued_at": "2026-07-19T00:00:00Z"
+        },
+        "skills": [
+          { "skill_id": "skill_judge_panel", "name": "judge-panel", "evidence_class": "PROVEN" }
+        ],
+        "sovereignty_manifest": { "host_region": "EU", "engine_disclosed": false }
+      }
+    }
+  ]
+}
