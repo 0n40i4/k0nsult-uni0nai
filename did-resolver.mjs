@@ -35,7 +35,7 @@ import process from 'node:process';
 // DID syntax (aligned with schemas/did-agent.schema.json + spec §2 ABNF).
 //   did:k0nsult:<provider>:<model>:<role>
 // The <model> segment is a MACHINE model identifier and MUST contain at least
-// one digit (a version token, e.g. opus-4.7-1m, large-2, llama.3_8b). This
+// one digit (a version token, e.g. opus-v2, large-2, llama.3_8b). This
 // blocks a bare name-shaped slug (e.g. "jankowalski") from masquerading as a
 // model — a person handle would ride in otherwise (agents-not-people).
 // ---------------------------------------------------------------------------
@@ -333,8 +333,8 @@ const PARSE_CASES = [
   {
     name: 'parse-valid-judge',
     expect: 'ok',
-    did: 'did:k0nsult:claude:opus-4.7-1m:judge',
-    want: { provider: 'claude', model: 'opus-4.7-1m', role: 'judge' },
+    did: 'did:k0nsult:claude:opus-v2:judge',
+    want: { provider: 'claude', model: 'opus-v2', role: 'judge' },
   },
   {
     name: 'parse-valid-executor',
@@ -365,7 +365,7 @@ const VALIDATE_CASES = [
     name: 'validate-pass-minimal-agent',
     expect: 'PASS',
     doc: {
-      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      id: 'did:k0nsult:claude:opus-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'BASE64URL_PUBLIC' },
     },
@@ -470,7 +470,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-allowlist-full-name',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      id: 'did:k0nsult:claude:opus-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       full_name: 'Jane Doe',
@@ -484,7 +484,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-pem-private-key-in-value',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      id: 'did:k0nsult:claude:opus-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: '-----BEGIN PRIVATE KEY-----' },
     },
@@ -497,7 +497,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-value-pii-under-allowed-key',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      id: 'did:k0nsult:claude:opus-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', x: 'someone@example.com' },
     },
@@ -510,7 +510,7 @@ const ROTATE_CASES = [
     name: 'rotate-produces-public-key-chain',
     run() {
       const base = {
-        id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+        id: 'did:k0nsult:claude:opus-v2:judge',
         subject_type: 'agent',
         public_key: { type: 'ed25519', value: 'PUB_K0' },
       };

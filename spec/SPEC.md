@@ -9,8 +9,8 @@ non-EU broker**. The machine-checkable truth lives in the schemas and fixtures
 them. Where prose and schema disagree, **the schema wins**.
 
 > **This repository is the contract, not the engine.** The federation runtime
-> (`agent-registry.js`, `did-resolver.js`, `skill-lab.js`, …) is proprietary
-> k0nsult.cloud code and is **deliberately not included** (doctrine: *silnik ukryty /
+> is a private engine (proprietary k0nsult.cloud code) and is **deliberately not
+> included**; its internal module layout is not disclosed (doctrine: *silnik ukryty /
 > commons otwarte* — hidden engine, open commons). You do not need the engine to
 > interoperate; that is the whole point of an open contract.
 
@@ -29,8 +29,8 @@ them. Where prose and schema disagree, **the schema wins**.
 Identity is a Decentralized Identifier whose subject is **always an agent**.
 
 ```
-did:k0nsult:claude:opus-4.7-1m:META_JUDGE
-            └prov  └model       └role
+did:k0nsult:acme:model-v2:judge
+            └prov └model    └role   (synthetic example — no real agent identity)
 ```
 
 - `subject_type` is a hard constant `"agent"`. Any other value **FAILS** validation.
@@ -83,7 +83,7 @@ Reputation is a **soulbound** record bound to one agent DID:
 ```json
 { "token_id": "sbt:...", "non_transferable": true,
   "issued_at": "2026-07-19T00:00:00Z", "reputation_score": 74,
-  "bound_to": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE" }
+  "bound_to": "did:k0nsult:acme:model-v2:judge" }
 ```
 
 - `non_transferable` is a hard constant `true`. Any transfer-bearing field

@@ -4,9 +4,9 @@
 
 This document specifies the **`did:k0nsult` DID method** in the shape of [W3C DID Core 1.0](https://www.w3.org/TR/did-core/): identifier syntax, the DID document, verification material, resolution, and the CRUD operations. It is the *method* layer beneath `spec/SPEC.md`, which narrates how the identity is *used* in the federation. The machine-checkable identity shape is `schemas/did-agent.schema.json` (evidence_class **DOWOD**); this method spec does **not** restate it — where prose and schema disagree, **the schema wins**.
 
-> **Contract, not engine.** The resolver, registry and key-rotation runtime
-> (`did-resolver.js`, `agent-registry.js`, …) are proprietary k0nsult.cloud code and
-> are **deliberately not included** (doctrine: *silnik ukryty / commons otwarte*). This
+> **Contract, not engine.** The resolver, registry and key-rotation runtime are
+> a private engine (proprietary k0nsult.cloud code) and are **deliberately not
+> included**; its internal module layout is not disclosed (doctrine: *silnik ukryty / commons otwarte*). This
 > spec defines what any conformant, independently-built resolver MUST do.
 
 ## Doctrine binding (non-negotiable)
@@ -40,10 +40,10 @@ role          = 1*( ALPHA / DIGIT / "." / "_" / "-" )
 ```
 
 - `provider` — the vendor/host of the agent runtime (e.g. `claude`, `mistral`, `local`). It is an **operator-of-an-agent** label, never a person.
-- `model` — the model family/version the agent runs (e.g. `opus-4.7-1m`).
+- `model` — the model family/version the agent runs (e.g. `opus-v2`).
 - `role` — the federation role, drawn from the schema `role` enum: `executor` | `orchestrator` | `judge` | `observer` | `registry`.
 
-Example: `did:k0nsult:claude:opus-4.7-1m:judge`.
+Example: `did:k0nsult:claude:opus-v2:judge`.
 
 The identifier MUST NOT encode any personal identifier (name, email, PESEL/national id, wallet PID). Anti-PID enforcement lives in the schema `not` guard and is normative.
 
