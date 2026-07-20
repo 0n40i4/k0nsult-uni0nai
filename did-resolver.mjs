@@ -214,13 +214,21 @@ function validate(doc) {
     }
   }
 
-  // V4 / V5 — forbidden keys anywhere in the tree.
-  walkKeys(doc, (k, _raw, path) => {
+  // V4 / V5 — forbidden keys AND forbidden VALUES anywhere in the tree.
+  // Round-3 H1 (BLOKER-2): validate() must scan VALUES too (like firstPiiPath),
+  // else email/PESEL/phone AND PEM private-key material in public_key.value pass.
+  const PRIVATE_PEM_RE = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
+  walkKeys(doc, (k, _raw, path, value) => {
     if (PRIVATE_KEY_KEYS.has(k)) {
       reasons.push(`V4: private key material forbidden at ${path} ("${k}") — No Password Custody`);
     }
     if (PII_KEYS.has(k)) {
       reasons.push(`V5: person PID field forbidden at ${path} ("${k}") — agents-not-people`);
+    }
+    if (typeof value === 'string') {
+      const vp = valuePII(value);
+      if (vp) reasons.push(`V5: person PII value (${vp}) forbidden at ${path}`);
+      if (PRIVATE_PEM_RE.test(value)) reasons.push(`V4: private key (PEM) material in value at ${path}`);
     }
   });
 
