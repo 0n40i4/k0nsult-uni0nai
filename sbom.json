@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:bf64603e-4858-4ea6-8061-a8f76691fb90",
+  "serialNumber": "urn:uuid:5ebbebfe-a534-466c-8146-f5dd94c28c99",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-20T02:31:17.365Z",
+    "timestamp": "2026-07-20T07:59:52.767Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -41,7 +41,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":13,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":7,\"node_libraries\":0}"
+        "value": "{\"total\":14,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":8,\"node_libraries\":0}"
       }
     ]
   },
@@ -179,6 +179,34 @@
         {
           "name": "k0nsult:bytes",
           "value": "27531"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:KNOWN-LIMITATIONS.md",
+      "name": "KNOWN-LIMITATIONS.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "45bdf71c88d92f1c3faeba541e73ef6549ff546291025a97af1c379a3dc409c7"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "KNOWN-LIMITATIONS.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "3756"
         },
         {
           "name": "k0nsult:surface",
