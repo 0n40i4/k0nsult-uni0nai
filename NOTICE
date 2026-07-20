@@ -13,6 +13,9 @@ NOT INCLUDED (proprietary engine — stays private, verified private repo):
     Engine source and module topology are deliberately withheld.
   This repository is the CONTRACT (schemas/taxonomy an implementer codes against),
   NOT the engine that runs it. No secrets, no keys, no personal data.
+  ALSO NOT INCLUDED: the ipIII evidence-attestation module — a COMMERCIAL product
+  currently for sale; NOT open-sourced and NOT covered by the Apache-2.0 grant here
+  (open-source only conditionally, if unsold — operator Human Override).
 
 DOCTRINE: claim <= proof; Human Override Always; agents-not-people;
   No Password Custody.

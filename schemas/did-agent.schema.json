@@ -10,7 +10,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "DID of the agent, e.g. did:agent:k0:0001."
+      "pattern": "^did:k0nsult:([A-Za-z0-9-]+):((?=[A-Za-z0-9._-]*[0-9])[A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$",
+      "description": "R7 (enforced by conformance.mjs DID_RE): id MUST match did:k0nsult:<provider>:<model>:<role>, e.g. did:k0nsult:anthropic:opus-4-8:judge. Pattern mirrors conformance.mjs so schema and validator do not drift."
     },
     "subject_type": {
       "description": "R1 (enforced): MUST equal the constant 'agent'. Any other value or absence => FAIL. Guarantees no natural person is the subject.",
