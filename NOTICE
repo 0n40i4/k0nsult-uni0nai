@@ -9,8 +9,8 @@ OPEN (Apache-2.0) — the interoperability CONTRACT only, in contract/:
                            AGENTS, not people — agents-not-people)
 
 NOT INCLUDED (proprietary engine — stays private, verified private repo):
-  - the federation runtime: agent-registry.js, agents-management.js, agents.js,
-    did-resolver.js, skill-lab.js and related k0nsult.cloud engine code.
+  - the federation runtime: a private engine (k0nsult.cloud proprietary code).
+    Engine source and module topology are deliberately withheld.
   This repository is the CONTRACT (schemas/taxonomy an implementer codes against),
   NOT the engine that runs it. No secrets, no keys, no personal data.
 

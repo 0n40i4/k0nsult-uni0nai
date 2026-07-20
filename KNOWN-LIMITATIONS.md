@@ -7,8 +7,10 @@ production-grade security or privacy guards. **Do not rely on them as your sole
 PII / private-key / accessibility enforcement layer.**
 
 This file is published deliberately. The commons has undergone **four rounds of
-independent adversarial audit** (5-judge and 20-specialist panels, each prompted to
-*refute*). Every finding — including the ones still open below — is public. That
+internal adversarial review** (5-judge and 20-specialist panels, each prompted to
+*refute*; commissioned by the maintainer, not third parties) and a separate
+**external review (roxkon / RSpace)**. Every finding — including the ones still open
+below — is public. That
 transparency is the point: `claim ≤ proof` means we document exactly where the tools
 are incomplete rather than overclaiming they are bulletproof.
 

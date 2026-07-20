@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
 // did-resolver.mjs — K0NSULT / uni0nai open commons
 // Zero-dependency did:k0nsult resolver / validator / rotator
 // (Node >=18, builtins only: node:crypto, node:fs, node:process, node:url).
@@ -33,9 +34,13 @@ import process from 'node:process';
 // ---------------------------------------------------------------------------
 // DID syntax (aligned with schemas/did-agent.schema.json + spec §2 ABNF).
 //   did:k0nsult:<provider>:<model>:<role>
+// The <model> segment is a MACHINE model identifier and MUST contain at least
+// one digit (a version token, e.g. opus-4.7-1m, large-2, llama.3_8b). This
+// blocks a bare name-shaped slug (e.g. "jankowalski") from masquerading as a
+// model — a person handle would ride in otherwise (agents-not-people).
 // ---------------------------------------------------------------------------
 const DID_RE =
-  /^did:k0nsult:([A-Za-z0-9-]+):([A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
+  /^did:k0nsult:([A-Za-z0-9-]+):((?=[A-Za-z0-9._-]*[0-9])[A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
 
 // spec §2: role is drawn from the federation role enum.
 const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
@@ -345,6 +350,10 @@ const PARSE_CASES = [
   },
   { name: 'parse-fail-wrong-method', expect: 'throw', did: 'did:web:example.com:agent' },
   { name: 'parse-fail-missing-role', expect: 'throw', did: 'did:k0nsult:claude:opus-4.7' },
+  // NEGATIVE (finding: model slug leaked a surname). A digitless, name-shaped
+  // model segment must NOT resolve — only the digit-requiring <model> rule in
+  // DID_RE rejects it (agents-not-people). Relax that rule and this PASSES.
+  { name: 'parse-fail-name-like-model', expect: 'throw', did: 'did:k0nsult:local:jankowalski:executor' },
   { name: 'parse-fail-empty-segment', expect: 'throw', did: 'did:k0nsult:claude::judge' },
   { name: 'parse-fail-trailing-colon', expect: 'throw', did: 'did:k0nsult:claude:opus:judge:' },
   { name: 'parse-fail-not-a-string', expect: 'throw', did: 42 },
@@ -461,10 +470,36 @@ const VALIDATE_CASES = [
     name: 'validate-fail-allowlist-full-name',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       full_name: 'Jane Doe',
+    },
+  },
+  // ISOLATING (V4 PEM-in-VALUE): private-key PEM smuggled as a STRING VALUE under
+  // an allowed key whose NAME is not on the private-key denylist (public_key.value).
+  // Only the PRIVATE_PEM_RE value scan catches it — comment that line out and this
+  // PASSES. Distinct from validate-fail-private-key-top (which trips the key NAME).
+  {
+    name: 'validate-fail-pem-private-key-in-value',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      subject_type: 'agent',
+      public_key: { type: 'ed25519', value: '-----BEGIN PRIVATE KEY-----' },
+    },
+  },
+  // ISOLATING (V5 value-PII): an email as a VALUE under an allowed key whose NAME
+  // is clean (public_key.x). Not the top-level `email` KEY (that also trips V5-key
+  // and V6-allowlist). Only the valuePII value scan catches it — comment it out
+  // and this PASSES.
+  {
+    name: 'validate-fail-value-pii-under-allowed-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:claude:opus-4.7-1m:judge',
+      subject_type: 'agent',
+      public_key: { type: 'ed25519', x: 'someone@example.com' },
     },
   },
 ];

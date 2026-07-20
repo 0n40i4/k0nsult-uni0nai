@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
 // conformance.mjs — K0NSULT / uni0nai open commons
 // Zero-dependency DID-agent conformance validator (Node >=18, builtins only).
 //
@@ -99,8 +100,10 @@ const ALLOWED_TOP_KEYS = new Set(
 );
 
 // H10 — storage-time id syntax MUST equal resolution-time (did-resolver), else a
-// "conformant" document is unresolvable. Same DID method shape as did-resolver.
-const DID_RE = /^did:k0nsult:([A-Za-z0-9-]+):([A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
+// "conformant" document is unresolvable. Same DID method shape as did-resolver:
+// the <model> segment MUST carry at least one digit (machine version token), so a
+// bare name-shaped slug cannot masquerade as a model (agents-not-people).
+const DID_RE = /^did:k0nsult:([A-Za-z0-9-]+):((?=[A-Za-z0-9._-]*[0-9])[A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
 const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
 
 // Deep-walk every key in the document. cb(normalizedKey, rawKey, path, value).
@@ -232,9 +235,11 @@ function validate(doc) {
 }
 
 // ---------------------------------------------------------------------------
-// Embedded golden vectors — the SAME set shipped as conformance/golden-vectors.json.
-// Kept inline so --selftest needs zero external files. Every vector carries the
-// expected verdict; the runner fails if any actual verdict diverges from expect.
+// Embedded golden vectors. Kept inline so --selftest needs zero external files.
+// This is a SUPERSET of (not identical to) conformance/golden-vectors.json — it
+// adds the mutation-isolating vectors below — so the two counts intentionally
+// differ. Run the shipped file explicitly with `--vectors conformance/golden-vectors.json`.
+// Every vector carries its expected verdict; the runner fails on any divergence.
 // ---------------------------------------------------------------------------
 const GOLDEN_VECTORS = [
   {
@@ -464,6 +469,66 @@ const GOLDEN_VECTORS = [
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       token: { non_transferable: true, policy: { transfer_to: 'did:k0nsult:test:m9999:executor' } },
+    },
+  },
+  // --- ISOLATING vectors: each FAILs via exactly ONE guard (mutation-verified) --
+  // (a) R2 value-PII under an ALLOWED key. `public_key` is allowlisted and `x` is
+  //     not a PII key — the ONLY violation is the valuePII VALUE scan. Comment out
+  //     `const vp = valuePII(value); if (vp) …` and this PASSES.
+  {
+    name: 'fail-r2-value-pii-under-allowed-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1021:executor',
+      subject_type: 'agent',
+      public_key: { x: 'someone@example.com' },
+    },
+  },
+  // (b) R2 nested PII KEY under an allowed key, with a non-PII-shaped value
+  //     ("Kowalski" trips no value regex). The ONLY violation is the deep
+  //     PII_KEYS name check. Comment out `if (PII_KEYS.has(k)) …` and this PASSES.
+  {
+    name: 'fail-r2-nested-pii-key-under-allowed-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1022:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB', surname: 'Kowalski' },
+    },
+  },
+  // (c) R6 closed-schema allowlist. `experimental_field` is not in the allowlist
+  //     and is not a PII/transfer/private key — the ONLY violation is R6. Comment
+  //     out the R6 top-level loop and this PASSES.
+  {
+    name: 'fail-r6-unknown-top-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1023:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      experimental_field: 'x',
+    },
+  },
+  // (d1) R7 id-syntax. A non-k0nsult method id — DID_RE.exec is null, so the ONLY
+  //      violation is the R7 syntax branch. Comment out the R7 block and this PASSES.
+  {
+    name: 'fail-r7-bad-did-syntax',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:web:example.com',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+    },
+  },
+  // (d2) R7 role. Valid DID syntax but a role outside the enum — the ONLY violation
+  //      is the R7 role branch. Comment out the R7 block and this PASSES.
+  {
+    name: 'fail-r7-bad-role',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1024:overlord',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
     },
   },
 ];

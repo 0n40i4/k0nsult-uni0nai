@@ -2,15 +2,15 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:5ebbebfe-a534-466c-8146-f5dd94c28c99",
+  "serialNumber": "urn:uuid:9be3a646-b848-427f-bcc8-3d0be512bf6c",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-20T07:59:52.767Z",
+    "timestamp": "2026-07-20T13:37:37.123Z",
     "tools": [
       {
         "vendor": "K0NSULT",
         "name": "sbom.mjs",
-        "version": "1.0.0"
+        "version": "1.1.0"
       }
     ],
     "component": {
@@ -36,16 +36,52 @@
         "value": "all files under root (recursive, excl. .git/node_modules) + node deps"
       },
       {
+        "name": "k0nsult:hash_basis",
+        "value": "lf-normalized text (matches fresh clone with .gitattributes eol=lf); binary raw"
+      },
+      {
         "name": "k0nsult:license",
         "value": "Apache-2.0"
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":14,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":8,\"node_libraries\":0}"
+        "value": "{\"total\":15,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":9,\"node_libraries\":0}"
       }
     ]
   },
   "components": [
+    {
+      "type": "file",
+      "bom-ref": "surface:.gitattributes",
+      "name": ".gitattributes",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fe3074d71e7f356a7b0e8525c7b249c1bc4e803a72a2d3e29df06335e79ea1c6"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": ".gitattributes"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "127"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
     {
       "type": "data",
       "bom-ref": "surface:conformance/golden-vectors.json",
@@ -69,6 +105,10 @@
           "value": "7292"
         },
         {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
           "name": "k0nsult:surface",
           "value": "open-source"
         }
@@ -84,7 +124,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "640dcee487a2f320a37d7ae663522f048a976a4cbc55bb8c880b0b5f8bcb33c3"
+          "content": "3dd6914fb5392f685dc57ecbcb61391f07c9b963d8fd3b2051f3e9f179d2f4a0"
         }
       ],
       "properties": [
@@ -94,7 +134,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "21176"
+          "value": "23705"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -112,7 +156,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "e47ef7956180f23de03c845e60564e5b38214431e23b17f2268c97765659bd08"
+          "content": "f9dcddd0949a9e099b7164b85f9b4e27b9cb1e101f20ff614826e2651f0ac17d"
         }
       ],
       "properties": [
@@ -122,7 +166,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "1557"
+          "value": "1228"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -140,7 +188,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "e404c8b17d4e5114e14674d74c9978ab0674eb1727794bdf6cc5663fa1ae6736"
+          "content": "2507c5dabbcab2556e233ffc7971ecd720c31de30b13c10204966840279ee606"
         }
       ],
       "properties": [
@@ -150,7 +198,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "6903"
+          "value": "1783"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -168,7 +220,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "24437b7bdb7966914a5d0ec7f540b43f5dc794d50213d81bf0c63df83bae7e2f"
+          "content": "984ea19944c55db9bd508efd151432eb16b24bdc27e07b4013501a5e22ff2bb3"
         }
       ],
       "properties": [
@@ -178,7 +230,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "27531"
+          "value": "29364"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -196,7 +252,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "45bdf71c88d92f1c3faeba541e73ef6549ff546291025a97af1c379a3dc409c7"
+          "content": "3bf0c1b6c973342f068a41d02b1ceecfbb154e491eaf1c6535424e42d9c29581"
         }
       ],
       "properties": [
@@ -206,7 +262,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "3756"
+          "value": "3858"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -237,6 +297,10 @@
           "value": "11348"
         },
         {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
           "name": "k0nsult:surface",
           "value": "open-source"
         }
@@ -252,7 +316,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "d47dc50ed2a42f4d84a8fc28b4a6f0554ca2fa8b7f7bf25814a7b52c0db5a392"
+          "content": "7fb9cdaf04d595b29c364bfce7e45ed068e9853bbb0884d8107d0db1ff8e4248"
         }
       ],
       "properties": [
@@ -262,7 +326,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "1054"
+          "value": "1045"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -280,7 +348,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "8ffa3c33f5b4f6796be6401e5813ed3884b4ec39ce07627d9476edfa30ad86dd"
+          "content": "ded28f8eeca7c365e44e10e877d2a146e830c9d7c1ae35082d3226cc1483a3f1"
         }
       ],
       "properties": [
@@ -290,7 +358,11 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "2037"
+          "value": "2094"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -321,6 +393,10 @@
           "value": "4608"
         },
         {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
           "name": "k0nsult:surface",
           "value": "open-source"
         }
@@ -347,6 +423,10 @@
         {
           "name": "k0nsult:bytes",
           "value": "10714"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",
@@ -377,6 +457,10 @@
           "value": "7300"
         },
         {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
           "name": "k0nsult:surface",
           "value": "open-source"
         }
@@ -405,6 +489,10 @@
           "value": "8038"
         },
         {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
           "name": "k0nsult:surface",
           "value": "open-source"
         }
@@ -431,6 +519,10 @@
         {
           "name": "k0nsult:bytes",
           "value": "7270"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
         },
         {
           "name": "k0nsult:surface",

@@ -4,9 +4,9 @@ The **agent-federation interoperability contract** of the K0NSULT open commons �
 the schemas an implementer codes *against* so EU-hosted agents from different
 vendors can identify, describe and call each other without a non-EU broker.
 
-This repository is the **contract, not the engine.** The federation runtime
-(`agent-registry.js`, `agents-management.js`, `did-resolver.js`, `skill-lab.js`, …)
-is proprietary k0nsult.cloud code and is **deliberately not included**.
+This repository is the **contract, not the engine.** The federation runtime is a
+**private engine** (proprietary k0nsult.cloud code) and is **deliberately not
+included** — no engine source, no module topology.
 
 > **Doctrine:** `agents-not-people` — DIDs and skills belong to **agents**, never
 > natural persons; only agents are scored. `claim ≤ proof`.
@@ -16,7 +16,7 @@ is proprietary k0nsult.cloud code and is **deliberately not included**.
 | File | What it is |
 |---|---|
 | `acp-schema.json` | **Agent Communication Protocol (ACP 1.0)** — a 4-layer envelope: protocol (schema/version/signature), context (session/state), constraint (permissions/latency/cost), intent (action/params/outcome). Messages carry `did:k0nsult:*` sender/receiver. |
-| `skills-registry.json` | **Skill taxonomy** — agent skills with `id`, `name`, `description`, `owner_did` (an agent), `version`, usage metrics. The shared vocabulary for capability routing. |
+| `skills-registry.json` | **Skill taxonomy** — a **synthetic example** plus the per-record shape (`id`, `name`, `description`, `owner_did` (an agent), `version`, `evidence_class`). The shared vocabulary for capability routing; carries no live records and no telemetry. |
 
 ## The three interoperability artefacts (COM(2026)503 building block)
 1. **DID-based agent identity** — `did:k0nsult:<provider>:<model>:<role>` (see ACP sender/receiver).

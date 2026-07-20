@@ -1,182 +1,35 @@
-[
-  {
-    "id": "skill_brainstorming",
-    "name": "brainstorming",
-    "description": "Technika kreatywnego burzy mózgu — generacja 50+ idei bez oceny",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Najpierw zbieram 50+ idei bez oceny, następnie klasteryzuję, oceniam divergentnie, konwerguję do top 5",
-    "used_by_count": 12,
-    "runs_count": 47,
-    "last_run_ms_avg": 250,
-    "created_at": "2026-04-27T10:00:00Z"
+{
+  "$comment": "SYNTHETIC EXAMPLE — NOT a live registry export. This file documents the SHAPE of a skill-taxonomy record for the open contract. All names, owners and versions are placeholders; it carries no real skills, no real agent identities and no telemetry (runs, timings, usage counts are engine-side and deliberately absent).",
+  "kind": "skill-taxonomy-example",
+  "record_schema": {
+    "type": "object",
+    "required": ["id", "name", "description", "owner_did", "version"],
+    "additionalProperties": false,
+    "properties": {
+      "id": { "type": "string", "description": "Stable machine id of the skill record." },
+      "name": { "type": "string", "description": "Human-readable capability label (routing vocabulary)." },
+      "description": { "type": "string", "description": "One-line statement of what the skill does." },
+      "owner_did": { "type": "string", "description": "did:* of the AGENT that owns the skill — agents-not-people; NEVER a natural person." },
+      "version": { "type": "string", "description": "SemVer of the skill record." },
+      "evidence_class": { "type": "string", "description": "Evidence tier backing the skill's claims (claim <= proof)." }
+    }
   },
-  {
-    "id": "skill_debugging",
-    "name": "debugging",
-    "description": "Systematyczne diagnozowanie błędów — izolacja, hipoteza, test",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.2.0",
-    "body_excerpt": "1. Zdefiniuj symptom\n2. Izoluj kontekst\n3. Testuj hipotezę\n4. Waliduj fix",
-    "used_by_count": 18,
-    "runs_count": 89,
-    "last_run_ms_avg": 340,
-    "created_at": "2026-04-27T10:05:00Z"
-  },
-  {
-    "id": "skill_p_gate",
-    "name": "/P (DEFINE→ANALYZE→VERIFY→EXECUTE)",
-    "description": "Dyscyplina decyzyjna z bramą przed destruktywnymi akcjami",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "2.0.0",
-    "body_excerpt": "Gate przed akcją >10min: DEFINE spec → ANALYZE options → VERIFY plan → ACK → EXECUTE",
-    "used_by_count": 25,
-    "runs_count": 156,
-    "last_run_ms_avg": 420,
-    "created_at": "2026-04-27T10:10:00Z"
-  },
-  {
-    "id": "skill_sesja_nocna",
-    "name": "sesja-nocna",
-    "description": "Protokół autonomicznej sesji nocnej — loop 12 iteracji",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Loop 12 iteracji ×30min, append-only log, STOP na signal, heartbeat publish",
-    "used_by_count": 8,
-    "runs_count": 32,
-    "last_run_ms_avg": 280,
-    "created_at": "2026-04-27T10:15:00Z"
-  },
-  {
-    "id": "skill_dispatch",
-    "name": "dispatching-parallel-agents",
-    "description": "Koordynacja N agentów na N zadań równolegle",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.1.0",
-    "body_excerpt": "Spawn N agentów na N zadań, merge wyników, deduplicate, aggregate",
-    "used_by_count": 10,
-    "runs_count": 41,
-    "last_run_ms_avg": 360,
-    "created_at": "2026-04-27T10:20:00Z"
-  },
-  {
-    "id": "skill_writing",
-    "name": "writing-plans",
-    "description": "Dokumentacja strategicznych planów — CONTEXT → GOAL → STEPS",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "CONTEXT → GOAL → CONSTRAINTS → STEPS → FALLBACK → DECISION",
-    "used_by_count": 9,
-    "runs_count": 28,
-    "last_run_ms_avg": 220,
-    "created_at": "2026-04-27T10:25:00Z"
-  },
-  {
-    "id": "skill_verify",
-    "name": "verification-before-completion",
-    "description": "Walidacja przed claim OK — checklist kompletności",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Checklist: tests pass? code review acked? deploy smoke OK? logs clean?",
-    "used_by_count": 14,
-    "runs_count": 72,
-    "last_run_ms_avg": 190,
-    "created_at": "2026-04-27T10:30:00Z"
-  },
-  {
-    "id": "skill_review",
-    "name": "requesting-code-review",
-    "description": "Formalne zgłoszenie do code review — scope + risks + test-plan",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Link → scope → risks → test-plan → pre-review checklist",
-    "used_by_count": 7,
-    "runs_count": 19,
-    "last_run_ms_avg": 150,
-    "created_at": "2026-04-27T10:35:00Z"
-  },
-  {
-    "id": "skill_frontend",
-    "name": "frontend-design",
-    "description": "Interfejsy user-facing — dark theme + grid + accessibility",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "CSS grid + flex + accessibility + responsive + semantic HTML",
-    "used_by_count": 11,
-    "runs_count": 35,
-    "last_run_ms_avg": 310,
-    "created_at": "2026-04-27T10:40:00Z"
-  },
-  {
-    "id": "skill_mcp",
-    "name": "mcp-builder",
-    "description": "Prototyp MCP servers (Model Context Protocol) — Resources + Tools",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Resource → Tool definitions → JSON schema → handler impl",
-    "used_by_count": 5,
-    "runs_count": 12,
-    "last_run_ms_avg": 290,
-    "created_at": "2026-04-27T10:45:00Z"
-  },
-  {
-    "id": "skill_claude_api",
-    "name": "claude-api",
-    "description": "Anthropic SDK integration — caching, batch, vision",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.2.0",
-    "body_excerpt": "messages.create() → prompt-caching → batch API → tokens accounting",
-    "used_by_count": 9,
-    "runs_count": 44,
-    "last_run_ms_avg": 380,
-    "created_at": "2026-04-27T10:50:00Z"
-  },
-  {
-    "id": "skill_schedule",
-    "name": "schedule",
-    "description": "Cron-based remote agent scheduling — ScheduleWakeup",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "CronCreate(cron string, prompt, durable flag) → fire w session",
-    "used_by_count": 6,
-    "runs_count": 18,
-    "last_run_ms_avg": 210,
-    "created_at": "2026-04-27T10:55:00Z"
-  },
-  {
-    "id": "skill_loop",
-    "name": "loop",
-    "description": "Recurring task self-pacing — ScheduleWakeup dynamic",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "ScheduleWakeup(delaySeconds, reason, prompt) → iterate na cache warm",
-    "used_by_count": 4,
-    "runs_count": 15,
-    "last_run_ms_avg": 180,
-    "created_at": "2026-04-27T11:00:00Z"
-  },
-  {
-    "id": "skill_config",
-    "name": "update-config",
-    "description": "settings.json via Skill tool — permissions, hooks, env",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Permissions → hooks → env vars → settings.local.json",
-    "used_by_count": 3,
-    "runs_count": 8,
-    "last_run_ms_avg": 140,
-    "created_at": "2026-04-27T11:05:00Z"
-  },
-  {
-    "id": "skill_fewer_perms",
-    "name": "fewer-permission-prompts",
-    "description": "Whitelist common readonly tool calls — reduce friction",
-    "owner_did": "did:k0nsult:claude:opus-4.7-1m:META_JUDGE",
-    "version": "1.0.0",
-    "body_excerpt": "Scan transcripts → detect patterns → .claude/settings.json allowlist",
-    "used_by_count": 2,
-    "runs_count": 5,
-    "last_run_ms_avg": 120,
-    "created_at": "2026-04-27T11:10:00Z"
-  }
-]
+  "examples": [
+    {
+      "id": "skill_example_a",
+      "name": "example-skill-a",
+      "description": "Generic capability descriptor — placeholder for a routed skill.",
+      "owner_did": "did:example:vendor-a:model-1:registry",
+      "version": "1.0.0",
+      "evidence_class": "A"
+    },
+    {
+      "id": "skill_example_b",
+      "name": "example-skill-b",
+      "description": "Second placeholder capability owned by a distinct agent.",
+      "owner_did": "did:example:vendor-b:model-2:registry",
+      "version": "1.0.0",
+      "evidence_class": "B"
+    }
+  ]
+}
