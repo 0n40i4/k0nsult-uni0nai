@@ -37,8 +37,10 @@ const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const PESEL_RE = /(?<![0-9A-Za-z])\d{11}(?![0-9A-Za-z])/;
 const PHONE_RE = /(?:\+\d[\d\s().-]{6,}\d)|(?<![0-9A-Za-z])\d(?:[\s().-]\d){6,}(?![0-9A-Za-z])/;
+const MAX_VALUE_LEN = 4096; // H8: cap scanned length — kills O(n^2) ReDoS on hostile huge values.
 function valuePII(v) {
   if (typeof v !== 'string') return null;
+  if (v.length > MAX_VALUE_LEN) return `oversized-value (>${MAX_VALUE_LEN} chars)`;
   if (EMAIL_RE.test(v)) return 'email-shaped';
   if (PESEL_RE.test(v)) return '11-digit (PESEL/national-id)-shaped';
   if (PHONE_RE.test(v)) return 'phone-shaped';
@@ -51,8 +53,13 @@ const PII_KEYS = new Set(
     'full_name', 'fullname', 'first_name', 'firstname', 'given_name', 'givenname',
     'last_name', 'lastname', 'surname', 'family_name', 'familyname',
     'email', 'e-mail', 'mail', 'phone', 'tel', 'telephone', 'mobile',
-    'address', 'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
-    'dob', 'date_of_birth', 'birth_date', 'birthdate',
+    'address', 'home_address', 'residential_address',
+    'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
+    'dob', 'date_of_birth', 'birth_date', 'birthdate', 'birthplace',
+    // H2: additional person-identifying fields the audit smuggled nested.
+    'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
+    'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
+    'personal_id', 'citizenship', 'gender',
   ].map(norm)
 );
 
@@ -64,6 +71,10 @@ const TRANSFER_KEYS = new Set(
     'transfer', 'transferable', 'transferrable', 'transfer_to', 'transferto',
     'transfer_hook', 'transferhook', 'approve', 'allowance', 'transfer_from',
     'transferfrom',
+    // H4: transfer aliases that bypassed the soulbound guard.
+    'delegate', 'delegate_to', 'delegateto', 'assign', 'assign_to', 'assignto',
+    'reassign', 'grant', 'send', 'move', 'transfer_ownership', 'transferownership',
+    'set_approval_for_all', 'setapprovalforall', 'sell', 'trade', 'swap',
   ].map(norm)
 );
 
@@ -87,6 +98,11 @@ const ALLOWED_TOP_KEYS = new Set(
   ].map(norm)
 );
 
+// H10 — storage-time id syntax MUST equal resolution-time (did-resolver), else a
+// "conformant" document is unresolvable. Same DID method shape as did-resolver.
+const DID_RE = /^did:k0nsult:([A-Za-z0-9-]+):([A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
+const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
+
 // Deep-walk every key in the document. cb(normalizedKey, rawKey, path, value).
 function walkKeys(node, cb, path = '$') {
   if (node === null || typeof node !== 'object') return;
@@ -105,11 +121,26 @@ function walkKeys(node, cb, path = '$') {
 // Core validator. Returns { verdict: 'PASS'|'FAIL', reasons: string[] }.
 // A document is PASS only when it violates none of R1..R5.
 // ---------------------------------------------------------------------------
+// H7: bounded-recursion depth probe (short-circuits at limit+1 — safe, no overflow).
+const MAX_DEPTH = 200;
+function exceedsDepth(node, depth = 0) {
+  if (node === null || typeof node !== 'object') return false;
+  if (depth > MAX_DEPTH) return true;
+  for (const v of Array.isArray(node) ? node : Object.values(node)) {
+    if (exceedsDepth(v, depth + 1)) return true;
+  }
+  return false;
+}
+
 function validate(doc) {
   const reasons = [];
 
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
     return { verdict: 'FAIL', reasons: ['R0: document is not a JSON object'] };
+  }
+  // H7: reject pathologically deep documents BEFORE any walk (stack-overflow DoS guard).
+  if (exceedsDepth(doc)) {
+    return { verdict: 'FAIL', reasons: [`R0: document nesting exceeds MAX_DEPTH=${MAX_DEPTH} (DoS guard)`] };
   }
 
   // R1 — subject_type must be exactly "agent".
@@ -117,6 +148,16 @@ function validate(doc) {
     reasons.push(
       `R1: subject_type must be "agent" (got ${JSON.stringify(doc.subject_type)})`
     );
+  }
+
+  // R7 (H10) — id must match the resolvable did:k0nsult method (storage == resolution).
+  {
+    const m = typeof doc.id === 'string' ? DID_RE.exec(doc.id) : null;
+    if (!m) {
+      reasons.push(`R7: id must match did:k0nsult:<provider>:<model>:<role> (got ${JSON.stringify(doc.id)})`);
+    } else if (!ROLES.has(m[3])) {
+      reasons.push(`R7: role must be one of ${[...ROLES].join('|')} (got "${m[3]}")`);
+    }
   }
 
   // R6 — closed document shape (allowlist). Any top-level key outside the
@@ -172,7 +213,11 @@ function validate(doc) {
   // nested object under the token can no longer slip past a shallow key check.
   walkKeys(doc, (k, _raw, path, value) => {
     if (k !== 'token') return;
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) return;
+    if (Array.isArray(value)) {
+      reasons.push(`R4: token at ${path} must be an object, not an array (H3: array wrapper bypasses non_transferable)`);
+      return;
+    }
+    if (value === null || typeof value !== 'object') return;
     // non_transferable === true is REQUIRED.
     const nt = value.non_transferable ?? value.nonTransferable;
     if (nt !== true) {
@@ -196,7 +241,7 @@ const GOLDEN_VECTORS = [
     name: 'valid-minimal-agent',
     expect: 'PASS',
     doc: {
-      id: 'did:agent:k0:0001',
+      id: 'did:k0nsult:test:m0001:executor',
       subject_type: 'agent',
       public_key: { kty: 'OKP', crv: 'Ed25519', x: 'BASE64URL_PUBLIC' },
       skills: [{ name: 'osint-triage', evidence_class: 'A' }],
@@ -207,7 +252,7 @@ const GOLDEN_VECTORS = [
     name: 'valid-no-token-no-skills',
     expect: 'PASS',
     doc: {
-      id: 'did:agent:k0:0002',
+      id: 'did:k0nsult:test:m0002:executor',
       subject_type: 'agent',
       public_key: { kty: 'OKP', crv: 'Ed25519', x: 'PUB' },
     },
@@ -216,7 +261,7 @@ const GOLDEN_VECTORS = [
     name: 'valid-multi-skill-all-evidence',
     expect: 'PASS',
     doc: {
-      id: 'did:agent:k0:0003',
+      id: 'did:k0nsult:test:m0003:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       skills: [
@@ -230,7 +275,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-subject-type-person',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1001',
+      id: 'did:k0nsult:test:m1001:executor',
       subject_type: 'person',
       public_key: { x: 'PUB' },
     },
@@ -238,13 +283,13 @@ const GOLDEN_VECTORS = [
   {
     name: 'fail-subject-type-missing',
     expect: 'FAIL',
-    doc: { id: 'did:agent:k0:1002', public_key: { x: 'PUB' } },
+    doc: { id: 'did:k0nsult:test:m1002:executor', public_key: { x: 'PUB' } },
   },
   {
     name: 'fail-pii-email',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1003',
+      id: 'did:k0nsult:test:m1003:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       email: 'someone@example.com',
@@ -254,7 +299,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-pii-pesel-nested',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1004',
+      id: 'did:k0nsult:test:m1004:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       controller: { pesel: '00000000000' },
@@ -264,7 +309,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-pii-national-id',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1005',
+      id: 'did:k0nsult:test:m1005:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       national_id: 'XYZ',
@@ -274,7 +319,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-pii-person-object',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1006',
+      id: 'did:k0nsult:test:m1006:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       person: { name: 'redacted' },
@@ -284,7 +329,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-skill-missing-evidence-class',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1007',
+      id: 'did:k0nsult:test:m1007:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       skills: [{ name: 'osint-triage' }],
@@ -294,7 +339,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-skill-empty-evidence-class',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1008',
+      id: 'did:k0nsult:test:m1008:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       skills: [{ name: 'osint-triage', evidence_class: '' }],
@@ -304,7 +349,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-token-transferable-field',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1009',
+      id: 'did:k0nsult:test:m1009:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       token: { non_transferable: true, transferable: false },
@@ -314,17 +359,17 @@ const GOLDEN_VECTORS = [
     name: 'fail-token-transfer-hook',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1010',
+      id: 'did:k0nsult:test:m1010:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
-      token: { non_transferable: true, transfer_to: 'did:agent:k0:9999' },
+      token: { non_transferable: true, transfer_to: 'did:k0nsult:test:m9999:executor' },
     },
   },
   {
     name: 'fail-token-non-transferable-not-true',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1011',
+      id: 'did:k0nsult:test:m1011:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       token: { kind: 'soulbound', non_transferable: false },
@@ -334,7 +379,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-token-non-transferable-missing',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1012',
+      id: 'did:k0nsult:test:m1012:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       token: { kind: 'soulbound' },
@@ -344,7 +389,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-private-key-present',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1013',
+      id: 'did:k0nsult:test:m1013:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       private_key: 'MC4CAQ...',
@@ -354,7 +399,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-private-key-jwk-d-nested',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1014',
+      id: 'did:k0nsult:test:m1014:executor',
       subject_type: 'agent',
       public_key: { kty: 'OKP', crv: 'Ed25519', x: 'PUB', d: 'PRIVATE_SCALAR' },
     },
@@ -363,7 +408,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-mnemonic-seed',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1015',
+      id: 'did:k0nsult:test:m1015:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       mnemonic: 'word word word ...',
@@ -373,7 +418,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-multiple-violations',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1016',
+      id: 'did:k0nsult:test:m1016:executor',
       subject_type: 'human',
       email: 'x@example.com',
       private_key: 'PRIV',
@@ -389,7 +434,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-allowlist-full-name-top',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1018',
+      id: 'did:k0nsult:test:m1018:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
       full_name: 'Jane Doe',
@@ -403,7 +448,7 @@ const GOLDEN_VECTORS = [
     name: 'fail-pii-email-hyphen-nested',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1019',
+      id: 'did:k0nsult:test:m1019:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB', 'e-mail': 'someone@example.com' },
     },
@@ -415,10 +460,10 @@ const GOLDEN_VECTORS = [
     name: 'fail-token-transfer-nested',
     expect: 'FAIL',
     doc: {
-      id: 'did:agent:k0:1020',
+      id: 'did:k0nsult:test:m1020:executor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
-      token: { non_transferable: true, policy: { transfer_to: 'did:agent:k0:9999' } },
+      token: { non_transferable: true, policy: { transfer_to: 'did:k0nsult:test:m9999:executor' } },
     },
   },
 ];

@@ -60,8 +60,10 @@ const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const PESEL_RE = /(?<![0-9A-Za-z])\d{11}(?![0-9A-Za-z])/;
 const PHONE_RE = /(?:\+\d[\d\s().-]{6,}\d)|(?<![0-9A-Za-z])\d(?:[\s().-]\d){6,}(?![0-9A-Za-z])/;
+const MAX_VALUE_LEN = 4096; // H8: cap scanned length — kills O(n^2) ReDoS on hostile huge values.
 function valuePII(v) {
   if (typeof v !== 'string') return null;
+  if (v.length > MAX_VALUE_LEN) return `oversized-value (>${MAX_VALUE_LEN} chars)`;
   if (EMAIL_RE.test(v)) return 'email-shaped';
   if (PESEL_RE.test(v)) return '11-digit (PESEL/national-id)-shaped';
   if (PHONE_RE.test(v)) return 'phone-shaped';
@@ -74,8 +76,12 @@ const PII_KEYS = new Set(
     'full_name', 'fullname', 'first_name', 'firstname', 'given_name', 'givenname',
     'last_name', 'lastname', 'surname', 'family_name', 'familyname',
     'email', 'e-mail', 'mail', 'phone', 'tel', 'telephone', 'mobile',
-    'address', 'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
-    'dob', 'date_of_birth', 'birth_date', 'birthdate',
+    'address', 'home_address', 'residential_address',
+    'pesel', 'national_id', 'national-id', 'nationalid', 'ssn',
+    'dob', 'date_of_birth', 'birth_date', 'birthdate', 'birthplace',
+    'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
+    'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
+    'personal_id', 'citizenship', 'gender',
   ].map(norm)
 );
 const PRIVATE_KEY_KEYS = new Set(
@@ -177,11 +183,25 @@ function parse(did) {
 //   V6  closed document shape — only allowlisted top-level keys (F3).
 // PASS only when none are violated.
 // ---------------------------------------------------------------------------
+const MAX_DEPTH = 200; // H7: DoS guard
+function exceedsDepth(node, depth = 0) {
+  if (node === null || typeof node !== 'object') return false;
+  if (depth > MAX_DEPTH) return true;
+  for (const v of Array.isArray(node) ? node : Object.values(node)) {
+    if (exceedsDepth(v, depth + 1)) return true;
+  }
+  return false;
+}
+
 function validate(doc) {
   const reasons = [];
 
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
     return { verdict: 'FAIL', reasons: ['V0: document is not a JSON object'] };
+  }
+  // H7: reject pathologically deep documents before any walk (stack-overflow DoS guard).
+  if (exceedsDepth(doc)) {
+    return { verdict: 'FAIL', reasons: [`V0: document nesting exceeds MAX_DEPTH=${MAX_DEPTH} (DoS guard)`] };
   }
 
   // V1 — id syntax.

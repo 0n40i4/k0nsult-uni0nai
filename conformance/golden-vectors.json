@@ -3,7 +3,7 @@
     "name": "valid-minimal-agent",
     "expect": "PASS",
     "doc": {
-      "id": "did:agent:k0:0001",
+      "id": "did:k0nsult:test:m0001:executor",
       "subject_type": "agent",
       "public_key": {
         "kty": "OKP",
@@ -26,7 +26,7 @@
     "name": "valid-no-token-no-skills",
     "expect": "PASS",
     "doc": {
-      "id": "did:agent:k0:0002",
+      "id": "did:k0nsult:test:m0002:executor",
       "subject_type": "agent",
       "public_key": {
         "kty": "OKP",
@@ -39,7 +39,7 @@
     "name": "valid-multi-skill-all-evidence",
     "expect": "PASS",
     "doc": {
-      "id": "did:agent:k0:0003",
+      "id": "did:k0nsult:test:m0003:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -63,7 +63,7 @@
     "name": "fail-subject-type-person",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1001",
+      "id": "did:k0nsult:test:m1001:executor",
       "subject_type": "person",
       "public_key": {
         "x": "PUB"
@@ -74,7 +74,7 @@
     "name": "fail-subject-type-missing",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1002",
+      "id": "did:k0nsult:test:m1002:executor",
       "public_key": {
         "x": "PUB"
       }
@@ -84,7 +84,7 @@
     "name": "fail-pii-email",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1003",
+      "id": "did:k0nsult:test:m1003:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -96,7 +96,7 @@
     "name": "fail-pii-pesel-nested",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1004",
+      "id": "did:k0nsult:test:m1004:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -110,7 +110,7 @@
     "name": "fail-pii-national-id",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1005",
+      "id": "did:k0nsult:test:m1005:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -122,7 +122,7 @@
     "name": "fail-pii-person-object",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1006",
+      "id": "did:k0nsult:test:m1006:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -136,7 +136,7 @@
     "name": "fail-skill-missing-evidence-class",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1007",
+      "id": "did:k0nsult:test:m1007:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -152,7 +152,7 @@
     "name": "fail-skill-empty-evidence-class",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1008",
+      "id": "did:k0nsult:test:m1008:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -169,7 +169,7 @@
     "name": "fail-token-transferable-field",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1009",
+      "id": "did:k0nsult:test:m1009:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -184,14 +184,14 @@
     "name": "fail-token-transfer-hook",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1010",
+      "id": "did:k0nsult:test:m1010:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
       },
       "token": {
         "non_transferable": true,
-        "transfer_to": "did:agent:k0:9999"
+        "transfer_to": "did:k0nsult:test:m9999:executor"
       }
     }
   },
@@ -199,7 +199,7 @@
     "name": "fail-token-non-transferable-not-true",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1011",
+      "id": "did:k0nsult:test:m1011:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -214,7 +214,7 @@
     "name": "fail-token-non-transferable-missing",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1012",
+      "id": "did:k0nsult:test:m1012:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -228,7 +228,7 @@
     "name": "fail-private-key-present",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1013",
+      "id": "did:k0nsult:test:m1013:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -240,7 +240,7 @@
     "name": "fail-private-key-jwk-d-nested",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1014",
+      "id": "did:k0nsult:test:m1014:executor",
       "subject_type": "agent",
       "public_key": {
         "kty": "OKP",
@@ -254,7 +254,7 @@
     "name": "fail-mnemonic-seed",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1015",
+      "id": "did:k0nsult:test:m1015:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -266,7 +266,7 @@
     "name": "fail-multiple-violations",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1016",
+      "id": "did:k0nsult:test:m1016:executor",
       "subject_type": "human",
       "email": "x@example.com",
       "private_key": "PRIV",
@@ -284,7 +284,7 @@
     "name": "fail-allowlist-full-name-top",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1018",
+      "id": "did:k0nsult:test:m1018:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -296,7 +296,7 @@
     "name": "fail-pii-email-hyphen-nested",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1019",
+      "id": "did:k0nsult:test:m1019:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB",
@@ -308,7 +308,7 @@
     "name": "fail-token-transfer-nested",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:1020",
+      "id": "did:k0nsult:test:m1020:executor",
       "subject_type": "agent",
       "public_key": {
         "x": "PUB"
@@ -316,7 +316,7 @@
       "token": {
         "non_transferable": true,
         "policy": {
-          "transfer_to": "did:agent:k0:9999"
+          "transfer_to": "did:k0nsult:test:m9999:executor"
         }
       }
     }
@@ -325,7 +325,7 @@
     "name": "R2-value-email-in-public_key",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:9001",
+      "id": "did:k0nsult:test:m9001:executor",
       "subject_type": "agent",
       "public_key": {
         "kty": "OKP",
@@ -337,7 +337,7 @@
     "name": "R2-nested-full_name",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:9002",
+      "id": "did:k0nsult:test:m9002:executor",
       "subject_type": "agent",
       "public_key": {
         "full_name": "Jan Kowalski"
@@ -348,7 +348,7 @@
     "name": "R2-value-phone",
     "expect": "FAIL",
     "doc": {
-      "id": "did:agent:k0:9003",
+      "id": "did:k0nsult:test:m9003:executor",
       "subject_type": "agent",
       "public_key": {
         "contact": "+48 600 100 200"
