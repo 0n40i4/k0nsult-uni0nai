@@ -1,0 +1,50 @@
+name: verify
+
+# Dowód działania, nie deklaracja. Na każdy push:
+#  1) uruchamiamy KAŻDY dostarczony --selftest w tym repo,
+#  2) sprawdzamy, że SBOM jest re-derywowalny ze świeżego klonu
+#     (recompute -> exact match) — to twierdzenie, które składamy publicznie,
+#     więc musi być egzekwowane maszynowo, a nie „na słowo".
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          path: repo
+
+      # Generator SBOM mieszka w k0nsult-tools. Klonujemy go OBOK repo
+      # (nie do środka!), żeby nie zaburzyć inwentarza plików przy --verify.
+      - name: Checkout K0NSULT tooling (SBOM generator)
+        uses: actions/checkout@v4
+        with:
+          repository: 0n40i4/k0nsult-tools
+          path: tooling
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run every shipped self-test
+        working-directory: repo
+        run: |
+          set -e
+          found=0
+          for f in $(git ls-files '*.mjs'); do
+            if grep -q -- '--selftest' "$f"; then
+              echo "::group::$f --selftest"
+              node "$f" --selftest
+              echo "::endgroup::"
+              found=$((found+1))
+            fi
+          done
+          echo "self-tests executed: $found"
+
+      - name: SBOM must be re-derivable (recompute -> exact match)
+        run: node tooling/sbom.mjs --root repo --out repo/sbom.json --verify

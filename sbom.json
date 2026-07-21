@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:26fe9268-3936-4193-8c94-0e9c137c95dd",
+  "serialNumber": "urn:uuid:95219694-4590-49d7-8916-f19fdd1841f7",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-20T16:49:38.375Z",
+    "timestamp": "2026-07-21T16:38:47.666Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -45,7 +45,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":16,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":10,\"node_libraries\":0}"
+        "value": "{\"total\":17,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":11,\"node_libraries\":0}"
       }
     ]
   },
@@ -71,6 +71,38 @@
         {
           "name": "k0nsult:bytes",
           "value": "127"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:.github/workflows/verify.yml",
+      "name": "verify.yml",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8406b6124728e2d134271756c519ac50ad0f0a76d30bee9960782cb47cc98046"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": ".github/workflows/verify.yml"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "1546"
         },
         {
           "name": "k0nsult:eol",
