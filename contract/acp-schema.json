@@ -27,7 +27,7 @@
     "message_id": "uuid-v4",
     "timestamp": "ISO8601",
     "sender": {
-      "did": "did:k0nsult:cNc:...",
+      "did": "did:k0nsult:acme:model-v2:executor",
       "role": "executor|orchestrator|judge"
     },
     "intent": {

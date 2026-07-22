@@ -155,10 +155,13 @@ function validate(doc) {
 
   // R7 (H10) — id must match the resolvable did:k0nsult method (storage == resolution).
   {
+    // Two INDEPENDENT guards (R2 review): the else-if form made the role branch
+    // unreachable-by-mutation, so a dead syntax guard could not be detected.
     const m = typeof doc.id === 'string' ? DID_RE.exec(doc.id) : null;
-    if (!m) {
+    if (m === null) {
       reasons.push(`R7: id must match did:k0nsult:<provider>:<model>:<role> (got ${JSON.stringify(doc.id)})`);
-    } else if (!ROLES.has(m[3])) {
+    }
+    if (m !== null && !ROLES.has(m[3])) {
       reasons.push(`R7: role must be one of ${[...ROLES].join('|')} (got "${m[3]}")`);
     }
   }
@@ -216,6 +219,11 @@ function validate(doc) {
   // nested object under the token can no longer slip past a shallow key check.
   walkKeys(doc, (k, _raw, path, value) => {
     if (k !== 'token') return;
+    // NOT mutation-isolatable, by construction (R2, stated openly): an array token
+    // can never expose `non_transferable === true` (property access on an array
+    // yields undefined), so the nt check below already FAILs it. This branch is
+    // redundant defence-in-depth / error-message clarity, NOT a load-bearing guard.
+    // Disabling it alone breaks no vector; do not read it as independently proven.
     if (Array.isArray(value)) {
       reasons.push(`R4: token at ${path} must be an object, not an array (H3: array wrapper bypasses non_transferable)`);
       return;
@@ -433,8 +441,10 @@ const GOLDEN_VECTORS = [
   },
   // --- NEGATIVE regressions proving the judge's exploits are now blocked -----
   // F3: an OPEN schema + denylist let unenumerated PII ride through as a clean
-  // agent. `full_name` is deliberately NOT in the PII denylist — this vector
-  // PASSED before and now FAILs *solely* via the R6 closed-schema allowlist.
+  // agent. NOTE (R2 correction): `full_name` IS in PII_KEYS, so this vector trips
+  // BOTH R2-key and R6 — it is a regression vector, NOT an isolating one. The
+  // earlier claim that it FAILs "solely via R6" was false; the R6-isolating vector
+  // is `fail-r6-unknown-top-key` below (benign, non-denylisted key).
   {
     name: 'fail-allowlist-full-name-top',
     expect: 'FAIL',
@@ -509,6 +519,21 @@ const GOLDEN_VECTORS = [
       experimental_field: 'x',
     },
   },
+  // (e) R3 skills-must-be-an-ARRAY. In OBJECT form the per-skill loop iterates
+  //     nothing, so every declared skill escapes the evidence_class requirement.
+  //     Nothing else in the document is violated, so the `!Array.isArray(doc.skills)`
+  //     branch is the ONLY guard here — flip it to `if (false)` and this PASSES.
+  //     (R2 mutation testing found this branch had NO vector at all.)
+  {
+    name: 'fail-r3-skills-object-form',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1025:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: { first: { name: 'osint-triage' } },
+    },
+  },
   // (d1) R7 id-syntax. A non-k0nsult method id — DID_RE.exec is null, so the ONLY
   //      violation is the R7 syntax branch. Comment out the R7 block and this PASSES.
   {
@@ -520,13 +545,14 @@ const GOLDEN_VECTORS = [
       public_key: { x: 'PUB' },
     },
   },
-  // (d2) R7 role. Valid DID syntax but a role outside the enum — the ONLY violation
-  //      is the R7 role branch. Comment out the R7 block and this PASSES.
+  // (d2) R7 role. Valid DID syntax but a role outside the spec enum
+  //      (executor|orchestrator|judge|observer|registry) — the ONLY violation is the
+  //      R7 role branch. Flip that branch to `if (false)` and this PASSES.
   {
     name: 'fail-r7-bad-role',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:test:m1024:overlord',
+      id: 'did:k0nsult:test:m1024:auditor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
     },

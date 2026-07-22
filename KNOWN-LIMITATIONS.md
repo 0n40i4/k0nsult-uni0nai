@@ -8,8 +8,10 @@ PII / private-key / accessibility enforcement layer.**
 
 This file is published deliberately. The commons has undergone **four rounds of
 internal adversarial review** (5-judge and 20-specialist panels, each prompted to
-*refute*; commissioned by the maintainer, not third parties) and a separate
-**external review (roxkon / RSpace)**. Every finding — including the ones still open
+*refute*; commissioned by the maintainer, not third parties). A separate
+**external review (roxkon / RSpace) is IN PROGRESS — round 2 of an unfinished
+series; its findings are open, not closed, and it must not be read as a completed
+third-party validation or sign-off.** Every finding — including the ones still open
 below — is public. That
 transparency is the point: `claim ≤ proof` means we document exactly where the tools
 are incomplete rather than overclaiming they are bulletproof.
@@ -46,10 +48,23 @@ allowlist-based, Unicode-normalising, structure-aware validator and human review
   `beneficiary`, `airdrop`, `escrow`, …) may certify a transferable token as "soulbound".
 
 ### Test coverage
-- **Self-tests assert the verdict, not the rule.** Mutation testing shows that removing an
-  individual guard can leave the self-tests green (multiple guards catch the same vector).
-  A green self-test is therefore **not** proof that a specific guard is doing its job.
-  Mutation-resistant tests are roadmap.
+- **Self-tests assert the verdict, not the rule** — this was measured, not assumed. External
+  review round 2 (roxkon / RSpace) found, and we reproduced by mutation testing, that **all
+  six `did-resolver.validate()` guards could be replaced with `if (false)` while the
+  self-test stayed 28/28 green**: every legacy negative vector used a digitless model slug
+  (`did:k0nsult:claude:opus:judge`), so the id-syntax guard fired first and masked the guard
+  the vector was supposed to exercise — right verdict, wrong reason.
+- **Current state (mutation-verified, reproducible).** Negative vectors were rebased onto
+  digit-bearing model slugs and isolating vectors added. Disabling any single guard now
+  breaks at least one vector: `did-resolver.mjs` 9/9 guards isolated (30/30 baseline),
+  `conformance.mjs` 11/12 (28/28 baseline). Reproduce by flipping one guard condition to
+  `false` and re-running `--selftest`.
+- **Still not isolatable (stated openly):** `conformance.mjs` R4 "token must not be an array"
+  is redundant — an array token can never expose `non_transferable:true`, so the
+  `non_transferable` guard already fails it. Disabling the array branch alone breaks no
+  vector; do not read it as an independently proven guard.
+- A green self-test still proves only what its vectors cover. Mutation coverage of the other
+  commons repos (`k0nsult-tools`, `k0nsult-eu-shield`) is roadmap.
 
 ## What IS solid (also from the audit)
 - No repo generates, stores, or requests a private key (No Password Custody holds).
