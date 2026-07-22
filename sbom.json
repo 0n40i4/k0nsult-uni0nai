@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:95219694-4590-49d7-8916-f19fdd1841f7",
+  "serialNumber": "urn:uuid:39b944d7-b4bd-4dc1-9367-a1fb4da3cdae",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-21T16:38:47.666Z",
+    "timestamp": "2026-07-22T01:02:36.878Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -45,7 +45,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":17,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":11,\"node_libraries\":0}"
+        "value": "{\"total\":18,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":12,\"node_libraries\":0}"
       }
     ]
   },
@@ -263,6 +263,38 @@
         {
           "name": "k0nsult:bytes",
           "value": "31821"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:ERRATA.md",
+      "name": "ERRATA.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e94a4f0047d10855813a6bd966c717eb882a10fc61987c96cf204e57b55341e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "ERRATA.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "2913"
         },
         {
           "name": "k0nsult:eol",
