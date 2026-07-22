@@ -28,7 +28,9 @@ import process from 'node:process';
 // otherwise `Set.has(norm(rawKey))` would silently miss the hyphenated variant.
 // ---------------------------------------------------------------------------
 
-const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+// Normalizacja klucza: lowercase, spacje/myslniki -> _, ORAZ usuniecie diakrytykow
+// (NFKD). Bez tego wielojezyczne pola PII (np. 'narodowość', 'płeć') omijaly denyliste.
+const norm = (k) => String(k).normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ł/gi, 'l').toLowerCase().replace(/[\s-]/g, '_');
 
 // R2 — person-identifying fields. Their mere presence anywhere fails the doc.
 // Belt to the R6 allowlist's braces: catches classic identity keys even when
@@ -61,6 +63,13 @@ const PII_KEYS = new Set(
     'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
     'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
     'personal_id', 'citizenship', 'gender',
+    // PL + inne jezyki (denylist best-effort, NIE wyczerpujaca — patrz KNOWN-LIMITATIONS).
+    'osoba', 'imie', 'nazwisko', 'nazwisko_panienskie', 'obywatelstwo', 'narodowosc',
+    'pochodzenie', 'pochodzenie_etniczne', 'etnicznosc', 'wyznanie', 'religia',
+    'orientacja', 'orientacja_seksualna', 'poglady', 'poglady_polityczne',
+    'zdrowie', 'stan_zdrowia', 'dane_medyczne', 'adres', 'data_urodzenia',
+    'miejsce_urodzenia', 'plec', 'numer_ewidencyjny', 'dowod', 'dowod_osobisty', 'paszport',
+    'vorname', 'nachname', 'prenom', 'geburtsdatum',
   ].map(norm)
 );
 

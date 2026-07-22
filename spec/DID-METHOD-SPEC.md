@@ -120,7 +120,7 @@ Deactivation is **append-only**, honouring *archiwizuj, nie usuwaj*:
 ## 8. Security & privacy considerations
 
 - **No custody:** the strongest key-compromise limiter is that conformant tooling holds no secret to compromise. Key loss/theft is contained to the operator's own custody boundary and remediated by rotation (§6.2).
-- **Anti-PID:** by `agents-not-people`, no DID document is personal data; DID resolution therefore cannot leak a person. The schema `not` guard (denylist of PID fields) is the belt over the `additionalProperties:false` suspenders.
+- **Anti-PID (best-effort, NOT a guarantee):** by `agents-not-people`, a DID document is not meant to carry personal data. The guard is a **denylist of person-identifying field names** (multilingual, but not exhaustive) plus a value-scan for ID-shaped strings (national-id/email/phone). This **raises the cost** of smuggling PID; it does **not** prove a document is free of personal data — a dossier using field names outside the denylist, in free-text values, passes. The closed-schema guard is **top-level only**. Do not read this as "resolution cannot leak a person"; read it as "obvious PID is rejected, the rest is the deployer's responsibility." See `KNOWN-LIMITATIONS.md`.
 - **PQC migration:** treated as a first-class, versioned evolution (§4), declared GAP until proven DOWOD.
 - **Irreversibility:** create/rotate/deactivate publish to a shared trust layer and are **human-gated**; agents never self-authorise an irreversible identity act.
 

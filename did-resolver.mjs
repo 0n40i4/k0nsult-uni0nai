@@ -58,7 +58,9 @@ const ISO8601_RE =
 // Sets are built through `norm` (F4): a listed spelling like 'e-mail' is stored
 // normalized ('e_mail'), so `Set.has(norm(rawKey))` cannot miss a hyphenated
 // variant. Applies to every vocabulary below.
-const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+// Normalizacja klucza: lowercase, spacje/myslniki -> _, ORAZ usuniecie diakrytykow
+// (NFKD). Bez tego wielojezyczne pola PII (np. 'narodowość', 'płeć') omijaly denyliste.
+const norm = (k) => String(k).normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ł/gi, 'l').toLowerCase().replace(/[\s-]/g, '_');
 
 // PII can hide in a VALUE of an allowed key (public_key.x = "jan@example.com"),
 // not just a key name. Round-2 HIGH: scan values too, at any depth.
@@ -87,6 +89,13 @@ const PII_KEYS = new Set(
     'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
     'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
     'personal_id', 'citizenship', 'gender',
+    // PL + inne jezyki (denylist best-effort, NIE wyczerpujaca — patrz KNOWN-LIMITATIONS).
+    'osoba', 'imie', 'nazwisko', 'nazwisko_panienskie', 'obywatelstwo', 'narodowosc',
+    'pochodzenie', 'pochodzenie_etniczne', 'etnicznosc', 'wyznanie', 'religia',
+    'orientacja', 'orientacja_seksualna', 'poglady', 'poglady_polityczne',
+    'zdrowie', 'stan_zdrowia', 'dane_medyczne', 'adres', 'data_urodzenia',
+    'miejsce_urodzenia', 'plec', 'numer_ewidencyjny', 'dowod', 'dowod_osobisty', 'paszport',
+    'vorname', 'nachname', 'prenom', 'geburtsdatum',
   ].map(norm)
 );
 const PRIVATE_KEY_KEYS = new Set(
