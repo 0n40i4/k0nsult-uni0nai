@@ -577,6 +577,22 @@ const GOLDEN_VECTORS = [
       skills: [{ name: 'a'.repeat(MAX_VALUE_LEN + 1), evidence_class: 'DOWOD' }],
     },
   },
+  // (h) valuePII 11-digit (PESEL/national-id) branch. Audyt roju (2/3, POTWIERDZONY):
+  //     galaz PESEL w valuePII nie miala wektora izolujacego — wylaczenie jej dawalo
+  //     selftest zielony. Wartosc ponizej to 11 cyfr z granicami niealfanumerycznymi
+  //     pod DOZWOLONYM kluczem (name) — nie oversized, nie klucz PII, nie inna regula;
+  //     jedyna mozliwa przyczyna FAIL to galaz PESEL_RE. Wylacz linie `if (PESEL_RE...)`
+  //     i ten wektor PASSES.
+  {
+    name: 'fail-pii-pesel-value-isolating',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1029:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: [{ name: 'ref 90010112345 end', evidence_class: 'DOWOD' }],
+    },
+  },
   // (d1) R7 id-syntax. A non-k0nsult method id — DID_RE.exec is null, so the ONLY
   //      violation is the R7 syntax branch. Comment out the R7 block and this PASSES.
   {
