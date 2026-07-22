@@ -42,7 +42,7 @@ x-k0nsult:
   sbom:
     format: 'CycloneDX-1.5'
     path: 'sbom.json'
-    url: 'https://github.com/0n40i4/k0nsult-uni0nai/blob/main/sbom.json'
+    url: 'https://github.com/0n40i4/k0nsult-uni0nai/blob/master/sbom.json'
     hash: 'sha256:f45e3e59d3a1d6ec2e4b38ea2fd0fb16c8eaa93fefeaecaa576b16b32b5056b4'
   provenance_chain:
     - manifest_hash: 'sha256:e1c8328f89f617dc348098e36a2c66283ae6ea0f563e4b2cfdca07890b385e4a'
