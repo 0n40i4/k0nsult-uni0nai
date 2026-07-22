@@ -37,14 +37,14 @@ x-k0nsult:
   evidence_reason: 'manifest hash + CycloneDX-1.5 SBOM + Apache-2.0 verified'
   manifest:
     path: 'sbom.json'
-    hash: 'sha256:e1c8328f89f617dc348098e36a2c66283ae6ea0f563e4b2cfdca07890b385e4a'
+    hash: 'sha256:cd84a4cbff36e5b0c419a07542040bd661d1cac2dfa1058c90b2032750b5ec3f'
     hash_alg: 'sha256'
   sbom:
     format: 'CycloneDX-1.5'
     path: 'sbom.json'
     url: 'https://github.com/0n40i4/k0nsult-uni0nai/blob/master/sbom.json'
-    hash: 'sha256:f45e3e59d3a1d6ec2e4b38ea2fd0fb16c8eaa93fefeaecaa576b16b32b5056b4'
+    hash: 'sha256:c09cbe41a2f3dfedee68b72487ac6513946b338db437f7211b25d516b45adffe'
   provenance_chain:
-    - manifest_hash: 'sha256:e1c8328f89f617dc348098e36a2c66283ae6ea0f563e4b2cfdca07890b385e4a'
-      recorded_at: '2026-07-22T01:02:36.878Z'
+    - manifest_hash: 'sha256:cd84a4cbff36e5b0c419a07542040bd661d1cac2dfa1058c90b2032750b5ec3f'
+      recorded_at: '2026-07-22T01:46:00.874Z'
       prev: null

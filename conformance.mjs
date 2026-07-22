@@ -534,6 +534,40 @@ const GOLDEN_VECTORS = [
       skills: { first: { name: 'osint-triage' } },
     },
   },
+  // (f) R0 MAX_DEPTH DoS guard. Audit R2 (LOW) found this guard had NO vector:
+  //     removing it left the suite green. The document below is valid in every
+  //     other respect — correct id, subject_type, public_key, no PII, no forbidden
+  //     key — so the depth check is the ONLY thing that can reject it. Flip
+  //     `if (exceedsDepth(doc))` to `if (false)` and this vector PASSES.
+  {
+    name: 'fail-r0-nesting-exceeds-max-depth',
+    expect: 'FAIL',
+    doc: (() => {
+      let deep = { leaf: 1 };
+      for (let i = 0; i < MAX_DEPTH + 20; i++) deep = { nested: deep };
+      return {
+        id: 'did:k0nsult:test:m1027:executor',
+        subject_type: 'agent',
+        public_key: { x: 'PUB' },
+        skills: [{ name: 'osint-triage', evidence_class: 'DOWOD', deep }],
+      };
+    })(),
+  },
+  // (g) H8 oversized-value cap. Also had NO vector (audit R2, LOW). The value is
+  //     benign — a run of 'a' — so it matches no PII shape and violates nothing
+  //     else; only the `v.length > MAX_VALUE_LEN` branch can reject it. This is
+  //     the ReDoS guard: without the cap, hostile megabyte-scale values are fed
+  //     to the scanning regexes.
+  {
+    name: 'fail-h8-oversized-value',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1028:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: [{ name: 'a'.repeat(MAX_VALUE_LEN + 1), evidence_class: 'DOWOD' }],
+    },
+  },
   // (d1) R7 id-syntax. A non-k0nsult method id — DID_RE.exec is null, so the ONLY
   //      violation is the R7 syntax branch. Comment out the R7 block and this PASSES.
   {
