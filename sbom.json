@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:95219694-4590-49d7-8916-f19fdd1841f7",
+  "serialNumber": "urn:uuid:21e39417-3322-4be3-902e-86602f579af9",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-21T16:38:47.666Z",
+    "timestamp": "2026-08-02T18:40:01.975Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -45,7 +45,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":17,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":11,\"node_libraries\":0}"
+        "value": "{\"total\":18,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":12,\"node_libraries\":0}"
       }
     ]
   },
@@ -103,6 +103,38 @@
         {
           "name": "k0nsult:bytes",
           "value": "1546"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:CLAIMS.md",
+      "name": "CLAIMS.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "57d085c42875dc749fe10539d055f823171a622f877e08790083066a98412891"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "CLAIMS.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "2808"
         },
         {
           "name": "k0nsult:eol",
@@ -380,7 +412,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "ded28f8eeca7c365e44e10e877d2a146e830c9d7c1ae35082d3226cc1483a3f1"
+          "content": "4f36556bddbff6ae1422d25d5c4e34fc7b4f19cceff492b0ed37bb81c718cd37"
         }
       ],
       "properties": [
@@ -390,7 +422,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "2094"
+          "value": "3923"
         },
         {
           "name": "k0nsult:eol",
