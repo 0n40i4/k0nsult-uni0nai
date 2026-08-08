@@ -45,6 +45,14 @@ const DID_RE =
 // spec §2: role is drawn from the federation role enum.
 const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
 
+// Words that name a natural person rather than a machine. Matched against a WHOLE
+// segment, never a substring — otherwise `humanoid-3` would read as a person.
+// Kept in sync with PERSON_SEGMENTS in the k0nsult engine (unionai-core/apps/core/src/lib/did.ts).
+const PERSON_WORDS = new Set([
+  'human', 'humans', 'person', 'people', 'user', 'operator',
+  'czlowiek', 'osoba', 'uzytkownik',
+]);
+
 // Strict ISO-8601 instant: YYYY-MM-DDThh:mm:ss[.sss](Z | ±hh:mm).
 // Date.parse is far too permissive (accepts '2026-07-19', '07/19/2026', locale
 // strings), so rotate() no longer trusts it as the gate (F13).
@@ -214,9 +222,27 @@ function validate(doc) {
     reasons.push(`V1: id must match did:k0nsult:<provider>:<model>:<role> (got ${JSON.stringify(doc.id)})`);
   } else {
     // role must be a known federation role (spec §2).
-    const { role } = parse(doc.id);
+    const { provider, model, role } = parse(doc.id);
     if (!ROLES.has(role)) {
       reasons.push(`V1: role "${role}" is not a federation role (${[...ROLES].join('|')})`);
+    }
+    // V1b (2026-08-08) — agents-not-people at the identifier level.
+    //
+    // Found by an adversarial audit: `did:k0nsult:human:0n40i4:observer` passed BOTH
+    // parse() and validate(). The <model> digit rule only guards the model segment, so a
+    // person-shaped word placed in <provider> — or a person handle in <model> — rode in
+    // untouched. The doctrine was enforced by the shape of one segment out of three.
+    //
+    // The k0nsult engine already rejected this case; the published spec did not. That is
+    // the R7 drift running the other way: an implementation stricter than the contract it
+    // claims to implement. Closing it here, in the contract.
+    for (const [segment, wartosc] of [['provider', provider], ['model', model], ['role', role]]) {
+      if (PERSON_WORDS.has(String(wartosc).toLowerCase())) {
+        reasons.push(
+          `V1b: <${segment}> is "${wartosc}" — the subject of a did:k0nsult identifier is ` +
+          `ALWAYS an agent, never a natural person (agents-not-people)`
+        );
+      }
     }
   }
 
