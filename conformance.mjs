@@ -28,7 +28,9 @@ import process from 'node:process';
 // otherwise `Set.has(norm(rawKey))` would silently miss the hyphenated variant.
 // ---------------------------------------------------------------------------
 
-const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+// Normalizacja klucza: lowercase, spacje/myslniki -> _, ORAZ usuniecie diakrytykow
+// (NFKD). Bez tego wielojezyczne pola PII (np. 'narodowość', 'płeć') omijaly denyliste.
+const norm = (k) => String(k).normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ł/gi, 'l').toLowerCase().replace(/[\s-]/g, '_');
 
 // R2 — person-identifying fields. Their mere presence anywhere fails the doc.
 // Belt to the R6 allowlist's braces: catches classic identity keys even when
@@ -61,6 +63,13 @@ const PII_KEYS = new Set(
     'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
     'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
     'personal_id', 'citizenship', 'gender',
+    // PL + inne jezyki (denylist best-effort, NIE wyczerpujaca — patrz KNOWN-LIMITATIONS).
+    'osoba', 'imie', 'nazwisko', 'nazwisko_panienskie', 'obywatelstwo', 'narodowosc',
+    'pochodzenie', 'pochodzenie_etniczne', 'etnicznosc', 'wyznanie', 'religia',
+    'orientacja', 'orientacja_seksualna', 'poglady', 'poglady_polityczne',
+    'zdrowie', 'stan_zdrowia', 'dane_medyczne', 'adres', 'data_urodzenia',
+    'miejsce_urodzenia', 'plec', 'numer_ewidencyjny', 'dowod', 'dowod_osobisty', 'paszport',
+    'vorname', 'nachname', 'prenom', 'geburtsdatum',
   ].map(norm)
 );
 
@@ -165,14 +174,20 @@ function validate(doc) {
 
   // R7 (H10) — id must match the resolvable did:k0nsult method (storage == resolution).
   {
+    // Two INDEPENDENT guards (R2 review): the else-if form made the role branch
+    // unreachable-by-mutation, so a dead syntax guard could not be detected.
     const m = typeof doc.id === 'string' ? DID_RE.exec(doc.id) : null;
-    if (!m) {
+    if (m === null) {
       reasons.push(`R7: id must match did:k0nsult:<provider>:<model>:<role> (got ${JSON.stringify(doc.id)})`);
-    } else {
-      if (!ROLES.has(m[3])) {
-        reasons.push(`R7: role must be one of ${[...ROLES].join('|')} (got "${m[3]}")`);
-      }
-      // R7b — agents-not-people at the identifier level (mirror of did-resolver V1b).
+    }
+    if (m !== null && !ROLES.has(m[3])) {
+      reasons.push(`R7: role must be one of ${[...ROLES].join('|')} (got "${m[3]}")`);
+    }
+    // R7b — agents-not-people at the identifier level (mirror of did-resolver V1b).
+    // Trzeci NIEZALEŻNY strażnik, w tym samym płaskim kształcie co dwa poprzednie —
+    // forma `else if` uczyniłaby go niewykrywalnym mutacyjnie, a to jest dokładnie
+    // ta wada, którą zamknęła recenzja R2 kilka linii wyżej.
+    if (m !== null) {
       for (const [segment, wartosc] of [['provider', m[1]], ['model', m[2]], ['role', m[3]]]) {
         if (PERSON_WORDS.has(String(wartosc).toLowerCase())) {
           reasons.push(
@@ -237,6 +252,11 @@ function validate(doc) {
   // nested object under the token can no longer slip past a shallow key check.
   walkKeys(doc, (k, _raw, path, value) => {
     if (k !== 'token') return;
+    // NOT mutation-isolatable, by construction (R2, stated openly): an array token
+    // can never expose `non_transferable === true` (property access on an array
+    // yields undefined), so the nt check below already FAILs it. This branch is
+    // redundant defence-in-depth / error-message clarity, NOT a load-bearing guard.
+    // Disabling it alone breaks no vector; do not read it as independently proven.
     if (Array.isArray(value)) {
       reasons.push(`R4: token at ${path} must be an object, not an array (H3: array wrapper bypasses non_transferable)`);
       return;
@@ -454,8 +474,10 @@ const GOLDEN_VECTORS = [
   },
   // --- NEGATIVE regressions proving the judge's exploits are now blocked -----
   // F3: an OPEN schema + denylist let unenumerated PII ride through as a clean
-  // agent. `full_name` is deliberately NOT in the PII denylist — this vector
-  // PASSED before and now FAILs *solely* via the R6 closed-schema allowlist.
+  // agent. NOTE (R2 correction): `full_name` IS in PII_KEYS, so this vector trips
+  // BOTH R2-key and R6 — it is a regression vector, NOT an isolating one. The
+  // earlier claim that it FAILs "solely via R6" was false; the R6-isolating vector
+  // is `fail-r6-unknown-top-key` below (benign, non-denylisted key).
   {
     name: 'fail-allowlist-full-name-top',
     expect: 'FAIL',
@@ -530,6 +552,71 @@ const GOLDEN_VECTORS = [
       experimental_field: 'x',
     },
   },
+  // (e) R3 skills-must-be-an-ARRAY. In OBJECT form the per-skill loop iterates
+  //     nothing, so every declared skill escapes the evidence_class requirement.
+  //     Nothing else in the document is violated, so the `!Array.isArray(doc.skills)`
+  //     branch is the ONLY guard here — flip it to `if (false)` and this PASSES.
+  //     (R2 mutation testing found this branch had NO vector at all.)
+  {
+    name: 'fail-r3-skills-object-form',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1025:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: { first: { name: 'osint-triage' } },
+    },
+  },
+  // (f) R0 MAX_DEPTH DoS guard. Audit R2 (LOW) found this guard had NO vector:
+  //     removing it left the suite green. The document below is valid in every
+  //     other respect — correct id, subject_type, public_key, no PII, no forbidden
+  //     key — so the depth check is the ONLY thing that can reject it. Flip
+  //     `if (exceedsDepth(doc))` to `if (false)` and this vector PASSES.
+  {
+    name: 'fail-r0-nesting-exceeds-max-depth',
+    expect: 'FAIL',
+    doc: (() => {
+      let deep = { leaf: 1 };
+      for (let i = 0; i < MAX_DEPTH + 20; i++) deep = { nested: deep };
+      return {
+        id: 'did:k0nsult:test:m1027:executor',
+        subject_type: 'agent',
+        public_key: { x: 'PUB' },
+        skills: [{ name: 'osint-triage', evidence_class: 'DOWOD', deep }],
+      };
+    })(),
+  },
+  // (g) H8 oversized-value cap. Also had NO vector (audit R2, LOW). The value is
+  //     benign — a run of 'a' — so it matches no PII shape and violates nothing
+  //     else; only the `v.length > MAX_VALUE_LEN` branch can reject it. This is
+  //     the ReDoS guard: without the cap, hostile megabyte-scale values are fed
+  //     to the scanning regexes.
+  {
+    name: 'fail-h8-oversized-value',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1028:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: [{ name: 'a'.repeat(MAX_VALUE_LEN + 1), evidence_class: 'DOWOD' }],
+    },
+  },
+  // (h) valuePII 11-digit (PESEL/national-id) branch. Audyt roju (2/3, POTWIERDZONY):
+  //     galaz PESEL w valuePII nie miala wektora izolujacego — wylaczenie jej dawalo
+  //     selftest zielony. Wartosc ponizej to 11 cyfr z granicami niealfanumerycznymi
+  //     pod DOZWOLONYM kluczem (name) — nie oversized, nie klucz PII, nie inna regula;
+  //     jedyna mozliwa przyczyna FAIL to galaz PESEL_RE. Wylacz linie `if (PESEL_RE...)`
+  //     i ten wektor PASSES.
+  {
+    name: 'fail-pii-pesel-value-isolating',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:test:m1029:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+      skills: [{ name: 'ref 90010112345 end', evidence_class: 'DOWOD' }],
+    },
+  },
   // (d1) R7 id-syntax. A non-k0nsult method id — DID_RE.exec is null, so the ONLY
   //      violation is the R7 syntax branch. Comment out the R7 block and this PASSES.
   {
@@ -541,13 +628,14 @@ const GOLDEN_VECTORS = [
       public_key: { x: 'PUB' },
     },
   },
-  // (d2) R7 role. Valid DID syntax but a role outside the enum — the ONLY violation
-  //      is the R7 role branch. Comment out the R7 block and this PASSES.
+  // (d2) R7 role. Valid DID syntax but a role outside the spec enum
+  //      (executor|orchestrator|judge|observer|registry) — the ONLY violation is the
+  //      R7 role branch. Flip that branch to `if (false)` and this PASSES.
   {
     name: 'fail-r7-bad-role',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:test:m1024:overlord',
+      id: 'did:k0nsult:test:m1024:auditor',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
     },

@@ -66,7 +66,9 @@ const ISO8601_RE =
 // Sets are built through `norm` (F4): a listed spelling like 'e-mail' is stored
 // normalized ('e_mail'), so `Set.has(norm(rawKey))` cannot miss a hyphenated
 // variant. Applies to every vocabulary below.
-const norm = (k) => String(k).toLowerCase().replace(/[\s-]/g, '_');
+// Normalizacja klucza: lowercase, spacje/myslniki -> _, ORAZ usuniecie diakrytykow
+// (NFKD). Bez tego wielojezyczne pola PII (np. 'narodowość', 'płeć') omijaly denyliste.
+const norm = (k) => String(k).normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/ł/gi, 'l').toLowerCase().replace(/[\s-]/g, '_');
 
 // PII can hide in a VALUE of an allowed key (public_key.x = "jan@example.com"),
 // not just a key name. Round-2 HIGH: scan values too, at any depth.
@@ -95,6 +97,13 @@ const PII_KEYS = new Set(
     'maiden_name', 'patronymic', 'middle_name', 'passport', 'passport_number',
     'tax_id', 'nip', 'iban', 'id_number', 'id_card', 'id_card_number',
     'personal_id', 'citizenship', 'gender',
+    // PL + inne jezyki (denylist best-effort, NIE wyczerpujaca — patrz KNOWN-LIMITATIONS).
+    'osoba', 'imie', 'nazwisko', 'nazwisko_panienskie', 'obywatelstwo', 'narodowosc',
+    'pochodzenie', 'pochodzenie_etniczne', 'etnicznosc', 'wyznanie', 'religia',
+    'orientacja', 'orientacja_seksualna', 'poglady', 'poglady_polityczne',
+    'zdrowie', 'stan_zdrowia', 'dane_medyczne', 'adres', 'data_urodzenia',
+    'miejsce_urodzenia', 'plec', 'numer_ewidencyjny', 'dowod', 'dowod_osobisty', 'paszport',
+    'vorname', 'nachname', 'prenom', 'geburtsdatum',
   ].map(norm)
 );
 const PRIVATE_KEY_KEYS = new Set(
@@ -217,26 +226,35 @@ function validate(doc) {
     return { verdict: 'FAIL', reasons: [`V0: document nesting exceeds MAX_DEPTH=${MAX_DEPTH} (DoS guard)`] };
   }
 
-  // V1 — id syntax.
-  if (typeof doc.id !== 'string' || !DID_RE.test(doc.id)) {
+  // V1 — id syntax AND role enum, as two INDEPENDENT guards.
+  // R2 finding: the previous if/else form made the role branch unreachable when
+  // the syntax branch fired, and disabling the syntax branch made parse() THROW
+  // out of validate() (crash instead of FAIL). Matching on DID_RE.exec once (as
+  // conformance.mjs does) keeps each guard separately mutation-testable and
+  // keeps validate() total — it returns a verdict, it never throws.
+  const idMatch = typeof doc.id === 'string' ? DID_RE.exec(doc.id) : null;
+  if (idMatch === null) {
     reasons.push(`V1: id must match did:k0nsult:<provider>:<model>:<role> (got ${JSON.stringify(doc.id)})`);
-  } else {
-    // role must be a known federation role (spec §2).
-    const { provider, model, role } = parse(doc.id);
-    if (!ROLES.has(role)) {
-      reasons.push(`V1: role "${role}" is not a federation role (${[...ROLES].join('|')})`);
-    }
-    // V1b (2026-08-08) — agents-not-people at the identifier level.
-    //
-    // Found by an adversarial audit: `did:k0nsult:human:0n40i4:observer` passed BOTH
-    // parse() and validate(). The <model> digit rule only guards the model segment, so a
-    // person-shaped word placed in <provider> — or a person handle in <model> — rode in
-    // untouched. The doctrine was enforced by the shape of one segment out of three.
-    //
-    // The k0nsult engine already rejected this case; the published spec did not. That is
-    // the R7 drift running the other way: an implementation stricter than the contract it
-    // claims to implement. Closing it here, in the contract.
-    for (const [segment, wartosc] of [['provider', provider], ['model', model], ['role', role]]) {
+  }
+  // role must be a known federation role (spec §2).
+  if (idMatch !== null && !ROLES.has(idMatch[3])) {
+    reasons.push(`V1: role "${idMatch[3]}" is not a federation role (${[...ROLES].join('|')})`);
+  }
+  // V1b (2026-08-08) — agents-not-people at the identifier level.
+  //
+  // Found by an adversarial audit: `did:k0nsult:human:0n40i4:observer` passed BOTH
+  // parse() and validate(). The <model> digit rule only guards the model segment, so a
+  // person-shaped word placed in <provider> — or a person handle in <model> — rode in
+  // untouched. The doctrine was enforced by the shape of one segment out of three.
+  //
+  // The k0nsult engine already rejected this case; the published spec did not. That is
+  // the R7 drift running the other way: an implementation stricter than the contract it
+  // claims to implement. Closing it here, in the contract.
+  //
+  // Trzeci NIEZALEŻNY strażnik, w tym samym płaskim kształcie co dwa poprzednie —
+  // forma `else if` uczyniłaby go niewykrywalnym mutacyjnie.
+  if (idMatch !== null) {
+    for (const [segment, wartosc] of [['provider', idMatch[1]], ['model', idMatch[2]], ['role', idMatch[3]]]) {
       if (PERSON_WORDS.has(String(wartosc).toLowerCase())) {
         reasons.push(
           `V1b: <${segment}> is "${wartosc}" — the subject of a did:k0nsult identifier is ` +
@@ -375,13 +393,17 @@ const PARSE_CASES = [
     want: { provider: 'local', model: 'llama.3_8b', role: 'registry' },
   },
   { name: 'parse-fail-wrong-method', expect: 'throw', did: 'did:web:example.com:agent' },
-  { name: 'parse-fail-missing-role', expect: 'throw', did: 'did:k0nsult:claude:opus-4.7' },
+  // Missing <role> segment. Model slug is digit-bearing on purpose, so the ONLY
+  // reason this throws is the absent role segment (not the <model>-digit rule).
+  { name: 'parse-fail-missing-role', expect: 'throw', did: 'did:k0nsult:acme:model-v2' },
   // NEGATIVE (finding: model slug leaked a surname). A digitless, name-shaped
   // model segment must NOT resolve — only the digit-requiring <model> rule in
   // DID_RE rejects it (agents-not-people). Relax that rule and this PASSES.
   { name: 'parse-fail-name-like-model', expect: 'throw', did: 'did:k0nsult:local:jankowalski:executor' },
-  { name: 'parse-fail-empty-segment', expect: 'throw', did: 'did:k0nsult:claude::judge' },
-  { name: 'parse-fail-trailing-colon', expect: 'throw', did: 'did:k0nsult:claude:opus:judge:' },
+  { name: 'parse-fail-empty-segment', expect: 'throw', did: 'did:k0nsult:acme::judge' },
+  // Digit-bearing model so the trailing colon — not the <model>-digit rule — is
+  // what this vector actually exercises.
+  { name: 'parse-fail-trailing-colon', expect: 'throw', did: 'did:k0nsult:acme:model-v2:judge:' },
   { name: 'parse-fail-not-a-string', expect: 'throw', did: 42 },
 ];
 
@@ -410,7 +432,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-private-key-top',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       private_key: 'MC4CAQ...',
@@ -420,7 +442,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-jwk-d-nested',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'agent',
       public_key: { kty: 'OKP', crv: 'Ed25519', x: 'PUB', d: 'PRIVATE_SCALAR' },
     },
@@ -429,7 +451,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-mnemonic',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       mnemonic: 'word word word ...',
@@ -439,7 +461,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-subject-person',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'person',
       public_key: { type: 'ed25519', value: 'PUB' },
     },
@@ -448,7 +470,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-subject-missing',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       public_key: { type: 'ed25519', value: 'PUB' },
     },
   },
@@ -456,7 +478,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-no-public-key',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'agent',
     },
   },
@@ -464,7 +486,7 @@ const VALIDATE_CASES = [
     name: 'validate-fail-pii-email',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:judge',
+      id: 'did:k0nsult:acme:model-v2:judge',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       email: 'someone@example.com',
@@ -479,19 +501,25 @@ const VALIDATE_CASES = [
       public_key: { type: 'ed25519', value: 'PUB' },
     },
   },
+  // ISOLATING (V1 role-enum): syntactically VALID DID (digit-bearing model) whose
+  // role is outside the federation enum. The syntax branch does NOT fire, so the
+  // role branch is the ONLY violation — flip it to `if (false)` and this PASSES.
+  // (Before R2 this used a digitless model `opus`, so V1 id-syntax fired first
+  // and masked the role guard: right verdict, wrong reason.)
   {
     name: 'validate-fail-unknown-role',
     expect: 'FAIL',
     doc: {
-      id: 'did:k0nsult:claude:opus:overlord',
+      id: 'did:k0nsult:acme:model-v2:auditor',
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
     },
   },
-  // NEGATIVE regression (F3): an OPEN schema + denylist let unenumerated PII
-  // ride through as a clean agent. `full_name` is NOT in the PII denylist — a
-  // valid id/role/public_key otherwise; this PASSED before and now FAILs solely
-  // via the V6 closed-schema allowlist.
+  // NEGATIVE regression (F3): an OPEN schema + denylist let unenumerated PII ride
+  // through as a clean agent. NOTE (R2 correction): `full_name` IS in PII_KEYS, so
+  // this vector trips BOTH V5-key and V6 — it is a regression vector, NOT an
+  // isolating one. The earlier comment claiming "full_name is NOT in the PII
+  // denylist" was false. The V6-isolating vector is the benign-unknown-key one below.
   {
     name: 'validate-fail-allowlist-full-name',
     expect: 'FAIL',
@@ -500,6 +528,34 @@ const VALIDATE_CASES = [
       subject_type: 'agent',
       public_key: { type: 'ed25519', value: 'PUB' },
       full_name: 'Jane Doe',
+    },
+  },
+  // ISOLATING (V6 closed-schema): a BENIGN unknown top-level key. It is not on any
+  // denylist (not PII, not private-key) and its value trips no value regex, so the
+  // closed-schema allowlist is the ONLY guard that can catch it — flip V6 to
+  // `if (false)` and this PASSES. This is the vector V6 previously lacked.
+  {
+    name: 'validate-fail-closed-schema-unknown-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:acme:model-v2:judge',
+      subject_type: 'agent',
+      public_key: { type: 'ed25519', value: 'PUB' },
+      experimental_field: 'x',
+    },
+  },
+  // ISOLATING (V5 PII KEY NAME): a PII key nested UNDER an allowed top-level key,
+  // with a value that trips no value regex ("Kowalski"). V6 only inspects TOP-level
+  // keys, so the deep PII_KEYS name check is the ONLY guard here — flip it to
+  // `if (false)` and this PASSES. (Top-level `email` trips V5-key + V5-value + V6
+  // and therefore isolates nothing.)
+  {
+    name: 'validate-fail-nested-pii-key-under-allowed-key',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:acme:model-v2:judge',
+      subject_type: 'agent',
+      public_key: { type: 'ed25519', value: 'PUB', surname: 'Kowalski' },
     },
   },
   // ISOLATING (V4 PEM-in-VALUE): private-key PEM smuggled as a STRING VALUE under
@@ -582,7 +638,7 @@ const ROTATE_CASES = [
     name: 'rotate-rejects-private-material',
     run() {
       const base = {
-        id: 'did:k0nsult:claude:opus:judge',
+        id: 'did:k0nsult:acme:model-v2:judge',
         subject_type: 'agent',
         public_key: { type: 'ed25519', value: 'PUB_K0' },
       };
@@ -600,7 +656,7 @@ const ROTATE_CASES = [
     name: 'rotate-rejects-bad-timestamp',
     run() {
       const base = {
-        id: 'did:k0nsult:claude:opus:judge',
+        id: 'did:k0nsult:acme:model-v2:judge',
         subject_type: 'agent',
         public_key: { type: 'ed25519', value: 'PUB_K0' },
       };
@@ -619,7 +675,7 @@ const ROTATE_CASES = [
     name: 'rotate-rejects-pii-in-new-key',
     run() {
       const base = {
-        id: 'did:k0nsult:claude:opus:judge',
+        id: 'did:k0nsult:acme:model-v2:judge',
         subject_type: 'agent',
         public_key: { type: 'ed25519', value: 'PUB_K0' },
       };
@@ -638,7 +694,7 @@ const ROTATE_CASES = [
     name: 'rotate-rejects-loose-date',
     run() {
       const base = {
-        id: 'did:k0nsult:claude:opus:judge',
+        id: 'did:k0nsult:acme:model-v2:judge',
         subject_type: 'agent',
         public_key: { type: 'ed25519', value: 'PUB_K0' },
       };

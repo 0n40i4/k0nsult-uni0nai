@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:21e39417-3322-4be3-902e-86602f579af9",
+  "serialNumber": "urn:uuid:646e6fa8-f138-4dcf-bbd2-193c44a4b553",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-08-02T18:40:01.975Z",
+    "timestamp": "2026-08-12T17:41:49.320Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -45,7 +45,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":18,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":12,\"node_libraries\":0}"
+        "value": "{\"total\":19,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":13,\"node_libraries\":0}"
       }
     ]
   },
@@ -188,7 +188,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "3dd6914fb5392f685dc57ecbcb61391f07c9b963d8fd3b2051f3e9f179d2f4a0"
+          "content": "8dde5efea2077f054b73b380294fd6a9278bca58b74654c3f30230eb7c462301"
         }
       ],
       "properties": [
@@ -198,7 +198,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "23705"
+          "value": "30926"
         },
         {
           "name": "k0nsult:eol",
@@ -220,7 +220,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "f9dcddd0949a9e099b7164b85f9b4e27b9cb1e101f20ff614826e2651f0ac17d"
+          "content": "b386f42210e45dc956675a381611e777d47d3deb0e4c45c3575814deb41cdeeb"
         }
       ],
       "properties": [
@@ -230,7 +230,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "1228"
+          "value": "1243"
         },
         {
           "name": "k0nsult:eol",
@@ -284,7 +284,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "1806d4cb079c4318776150bd18e9032e5bf87d7ab40513b191cd411c2c76b5f8"
+          "content": "bcd8b8319662ca4d2ac360a091abc34b57a0aaf4d2067893d33a0a83fe6c4d01"
         }
       ],
       "properties": [
@@ -294,7 +294,39 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "29332"
+          "value": "34253"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "surface:ERRATA.md",
+      "name": "ERRATA.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7e94a4f0047d10855813a6bd966c717eb882a10fc61987c96cf204e57b55341e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "ERRATA.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "2913"
         },
         {
           "name": "k0nsult:eol",
@@ -316,7 +348,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "3bf0c1b6c973342f068a41d02b1ceecfbb154e491eaf1c6535424e42d9c29581"
+          "content": "40683f1be538929e757558bea9727ba6fb72ddf271c7409a36b1ab2e03d819bd"
         }
       ],
       "properties": [
@@ -326,7 +358,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "3858"
+          "value": "5111"
         },
         {
           "name": "k0nsult:eol",
@@ -444,7 +476,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "15be022e6b6bfa50b5c99c4b28b0e19acd278506ca4bf68a6eb6f0177bf9c028"
+          "content": "4092db392cf321883bd416f6f3ec962584568beafc53d81325bbfe924dcbb4b4"
         }
       ],
       "properties": [
@@ -454,7 +486,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "4883"
+          "value": "4878"
         },
         {
           "name": "k0nsult:eol",
@@ -508,7 +540,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "e54d2f38021b1316a20489fe2d97d9ca185c7a3fbe2d12f7dc20418ef20bc8e3"
+          "content": "f8590d594bb91b0ff28d0d9404915782b08c9e3f4c9d502d870254f39979fd44"
         }
       ],
       "properties": [
@@ -518,7 +550,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "10724"
+          "value": "11175"
         },
         {
           "name": "k0nsult:eol",
