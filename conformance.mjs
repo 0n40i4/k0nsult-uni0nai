@@ -115,6 +115,16 @@ const ALLOWED_TOP_KEYS = new Set(
 const DID_RE = /^did:k0nsult:([A-Za-z0-9-]+):((?=[A-Za-z0-9._-]*[0-9])[A-Za-z0-9._-]+):([A-Za-z0-9._-]+)$/;
 const ROLES = new Set(['executor', 'orchestrator', 'judge', 'observer', 'registry']);
 
+// R7b (2026-08-12) — mirror of did-resolver V1b. Person-shaped words are refused
+// in EVERY segment, not just <model>. Without this, `did:k0nsult:human:0n40i4:observer`
+// stores as conformant here and then FAILs at resolution — storage-time and
+// resolution-time invariants must be identical (H10), and this was the last place
+// where they were not.
+const PERSON_WORDS = new Set([
+  'human', 'humans', 'person', 'people', 'user', 'operator',
+  'czlowiek', 'osoba', 'uzytkownik',
+]);
+
 // Deep-walk every key in the document. cb(normalizedKey, rawKey, path, value).
 function walkKeys(node, cb, path = '$') {
   if (node === null || typeof node !== 'object') return;
@@ -172,6 +182,20 @@ function validate(doc) {
     }
     if (m !== null && !ROLES.has(m[3])) {
       reasons.push(`R7: role must be one of ${[...ROLES].join('|')} (got "${m[3]}")`);
+    }
+    // R7b — agents-not-people at the identifier level (mirror of did-resolver V1b).
+    // Trzeci NIEZALEŻNY strażnik, w tym samym płaskim kształcie co dwa poprzednie —
+    // forma `else if` uczyniłaby go niewykrywalnym mutacyjnie, a to jest dokładnie
+    // ta wada, którą zamknęła recenzja R2 kilka linii wyżej.
+    if (m !== null) {
+      for (const [segment, wartosc] of [['provider', m[1]], ['model', m[2]], ['role', m[3]]]) {
+        if (PERSON_WORDS.has(String(wartosc).toLowerCase())) {
+          reasons.push(
+            `R7b: <${segment}> is "${wartosc}" — the subject of a did:k0nsult identifier is ` +
+            `ALWAYS an agent, never a natural person (agents-not-people)`
+          );
+        }
+      }
     }
   }
 
@@ -612,6 +636,45 @@ const GOLDEN_VECTORS = [
     expect: 'FAIL',
     doc: {
       id: 'did:k0nsult:test:m1024:auditor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+    },
+  },
+  // (d3) R7b <provider>. THE vector that motivated this rule: syntax is valid
+  //      (DID_RE passes — <model> "0n40i4" carries digits), the role is in the
+  //      enum, no PII key, no forbidden top-level key. Before R7b this document
+  //      was stored as conformant here and then FAILed at resolution under V1b.
+  //      Comment out the R7b loop and this PASSES.
+  {
+    name: 'fail-r7b-person-word-in-provider',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:human:0n40i4:observer',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+    },
+  },
+  // (d4) NOT isolating, and deliberately so. No word in PERSON_WORDS contains a
+  //      digit, so DID_RE's <model> digit rule already rejects every one of them
+  //      before R7b is consulted — this document FAILs at R7 syntax, not R7b.
+  //      The vector is kept to pin that overlap: if the digit rule is ever
+  //      relaxed, R7b is what remains, and this vector must still FAIL.
+  {
+    name: 'fail-r7b-person-word-in-model',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:anthropic:operator:executor',
+      subject_type: 'agent',
+      public_key: { x: 'PUB' },
+    },
+  },
+  // (d5) R7b <role>. "user" is outside ROLES too, so this vector is NOT isolating
+  //      — it exists to prove the third segment is walked at all.
+  {
+    name: 'fail-r7b-person-word-in-role',
+    expect: 'FAIL',
+    doc: {
+      id: 'did:k0nsult:anthropic:opus5:user',
       subject_type: 'agent',
       public_key: { x: 'PUB' },
     },

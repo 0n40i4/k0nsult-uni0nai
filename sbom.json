@@ -2,10 +2,10 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
   "$profile": "cyclonedx-lite (podzbior: bez services/vulnerabilities/compositions)",
-  "serialNumber": "urn:uuid:190c275f-5f38-44de-b08b-bf44ee5ab2dd",
+  "serialNumber": "urn:uuid:646e6fa8-f138-4dcf-bbd2-193c44a4b553",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-07-22T13:50:00.449Z",
+    "timestamp": "2026-08-12T17:41:49.320Z",
     "tools": [
       {
         "vendor": "K0NSULT",
@@ -33,7 +33,7 @@
       },
       {
         "name": "k0nsult:scope",
-        "value": "files under root (recursive), excl. .git/node_modules and generator meta-files (publiccode.yml, index.json, *sbom.json — anti-cycle); + node deps"
+        "value": "all files under root (recursive, excl. .git/node_modules) + node deps"
       },
       {
         "name": "k0nsult:hash_basis",
@@ -45,7 +45,7 @@
       },
       {
         "name": "k0nsult:stats",
-        "value": "{\"total\":18,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":12,\"node_libraries\":0}"
+        "value": "{\"total\":19,\"files_html\":0,\"data_json\":4,\"code_files\":2,\"other_files\":13,\"node_libraries\":0}"
       }
     ]
   },
@@ -115,6 +115,38 @@
       ]
     },
     {
+      "type": "file",
+      "bom-ref": "surface:CLAIMS.md",
+      "name": "CLAIMS.md",
+      "group": "other",
+      "version": "1.0.0",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "57d085c42875dc749fe10539d055f823171a622f877e08790083066a98412891"
+        }
+      ],
+      "properties": [
+        {
+          "name": "k0nsult:path",
+          "value": "CLAIMS.md"
+        },
+        {
+          "name": "k0nsult:bytes",
+          "value": "2808"
+        },
+        {
+          "name": "k0nsult:eol",
+          "value": "lf-normalized"
+        },
+        {
+          "name": "k0nsult:surface",
+          "value": "open-source"
+        }
+      ]
+    },
+    {
       "type": "data",
       "bom-ref": "surface:conformance/golden-vectors.json",
       "name": "golden-vectors.json",
@@ -156,7 +188,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0305d714b5ef2ed417d919f883ced17e947dceff1712081b03c3f9cbaa5f9461"
+          "content": "8dde5efea2077f054b73b380294fd6a9278bca58b74654c3f30230eb7c462301"
         }
       ],
       "properties": [
@@ -166,7 +198,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "28167"
+          "value": "30926"
         },
         {
           "name": "k0nsult:eol",
@@ -252,7 +284,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "47c2d6a8ddf375d36c93edc9bcf7aff4e6578998ecf5126a45c5b9226feee85e"
+          "content": "bcd8b8319662ca4d2ac360a091abc34b57a0aaf4d2067893d33a0a83fe6c4d01"
         }
       ],
       "properties": [
@@ -262,7 +294,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "32617"
+          "value": "34253"
         },
         {
           "name": "k0nsult:eol",
@@ -412,7 +444,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "ded28f8eeca7c365e44e10e877d2a146e830c9d7c1ae35082d3226cc1483a3f1"
+          "content": "4f36556bddbff6ae1422d25d5c4e34fc7b4f19cceff492b0ed37bb81c718cd37"
         }
       ],
       "properties": [
@@ -422,7 +454,7 @@
         },
         {
           "name": "k0nsult:bytes",
-          "value": "2094"
+          "value": "3923"
         },
         {
           "name": "k0nsult:eol",

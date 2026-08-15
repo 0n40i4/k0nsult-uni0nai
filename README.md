@@ -28,6 +28,23 @@ Code your own runtime that (a) resolves `did:k0nsult:*` identities, (b) advertis
 skills in the taxonomy shape, and (c) exchanges ACP-1.0 messages. You do **not**
 need the K0NSULT engine to interoperate — that is the point of an open contract.
 
+## Relation to `unionai-core` / `uni0n` (three similarly-named repos, three different roles)
+Three repositories in the `0n40i4` GitHub account share the "unionai"/"uni0n" name root.
+They are **not interchangeable** and this repo does not run any of the other two:
+
+| Repo | Role | Visibility | GitHub description (verbatim, 2026-08-02) |
+|---|---|---|---|
+| **`k0nsult-uni0nai`** (this repo) | The interoperability **contract/schema** — ACP envelope + skill taxonomy. No runtime, no engine. | public (OSS) | *(this README)* |
+| [`unionai-core`](https://github.com/0n40i4/unionai-core) | The **private, proprietary production engine** — "recovered production source v0.3.0". Explicitly disambiguates itself from both other repos in its own description. | private | "UNIONAI core — odzyskane zrodlo produkcyjne v0.3.0 (2026-07-22). NIE jest to k0nsult-uni0nai (commons/spec) ani uni0n (testnet)." |
+| [`uni0n`](https://github.com/0n40i4/uni0n) | A **public testnet** federation layer (research initiative), run under a separate legal umbrella (Grass Roots Lobbing). | public | "UNIONAI Omega Infinity - public testnet of an open AI-agent federation layer (research initiative). DID-lite trust, memory anchoring, semantic routing, EU AI Act readiness (NOT certification/compliance). Status: GO CONTROLLED / PUBLIC TESTNET." |
+
+`unionai-core` already disambiguates itself from this repo and from `uni0n` in its own
+GitHub description; this section closes the gap in the other direction (K0S-014) so a
+reader landing on `k0nsult-uni0nai` first gets the same clarity without having to find
+`unionai-core` independently. If you are looking for a **running** federation
+endpoint, you want `uni0n` (public testnet) or the private `unionai-core` engine — not
+this repo, which is the contract those engines are expected to honour.
+
 ## Supply chain
 `sbom.json` via [`k0nsult-tools`](../k0nsult-tools).
 
